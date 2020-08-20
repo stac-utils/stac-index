@@ -143,7 +143,20 @@ class Server extends Config {
 	}
 
 	root(req, res, next) {
-
+		res.send(200, {
+			stac_version: "0.9.0",
+			id:"stac-index",
+			description: "Root catalog of STAC Index.",
+			links:[
+				{
+					rel: "data",
+					href: this.serverUrl + "/collections",
+					type: "application/json",
+					title: "Collections"
+				}
+			]
+		});
+		return next();
 	}
 
 	async add(req, res, next) {

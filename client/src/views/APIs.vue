@@ -18,11 +18,14 @@
           <div class="d-flex w-100 justify-content-between">
             <h5 class="mb-1">{{ api.title }}</h5>
             <small>
-              <b-badge v-if="api.isPrivate" variant="dark">Private</b-badge>
-              <b-badge variant="success">Public</b-badge>
+              <b-badge v-if="api.isPrivate" variant="dark" :id="'api_access_' + i">Private</b-badge>
+              <b-badge v-else variant="success">Public</b-badge>
+              <b-tooltip :target="'api_access_' + i" triggers="hover">
+                <Description :description="api.access" />
+              </b-tooltip>
             </small>
           </div>
-          <p class="mb-1">{{ api.summary }}</p>
+          <Description :description="api.summary" />
           <small><code>{{ api.url }}</code></small>
         </b-list-group-item>
       </b-list-group>
@@ -31,8 +34,13 @@
 </template>
 
 <script>
+import { Description } from '@openeo/vue-components';
+
 export default {
   name: 'APIs',
+  components: {
+    Description
+  },
   props: {
     access: {
       type: Boolean,

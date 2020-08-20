@@ -59,6 +59,13 @@ main {
   color: white;
   font-weight: bold;
 }
+.tooltip a {
+  color: #09B3AD;
+}
+.tooltip a:hover {
+  color: white;
+  text-decoration: underline;
+}
 #app nav a.disabled, #app .nav a.disabled {
   opacity: 0.5;
 }
@@ -80,11 +87,21 @@ main {
   color: #144E63;
   font-weight: normal;
 }
+#app .list-group-item small {
+  color: black;
+}
 
 #app .badge {
   margin: 1px;
 }
 #app h6 {
   margin-top: 1em;
+}
+#app .styled-description p {
+  line-height: 1.5em;
+  margin-bottom: 0.5em;
+}
+#app .styled-description p:last-of-type {
+  margin-bottom: 0;
 }
 </style>

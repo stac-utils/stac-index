@@ -20,7 +20,7 @@
         </b-form-group>
         <b-form-group v-if="fields.includes('summary')" label="Summary:" label-for="summary">
           <b-form-textarea id="summary" v-model="summary" rows="3" required minlength="50" maxlength="500"></b-form-textarea>
-          <b-form-text>Short summary about the {{ formTitle }}. Min. 50 chars, max. 500 chars.</b-form-text>
+          <b-form-text>Short summary about the {{ formTitle }}. CommonMark (Markdown) is supported. Min. 50 chars, max. 500 chars.</b-form-text>
         </b-form-group>
         <b-form-group v-if="fields.includes('categories')" label="Categories:" label-for="categories">
           <multiselect v-model="categories" :options="categoryList" :multiple="true" :taggable="true"></multiselect>
@@ -36,7 +36,7 @@
         <b-form-group v-if="fields.includes('private')" label="Access:" label-for="private">
           <b-form-checkbox id="private" v-model="accessPrivate" name="private" :value="true" :unchecked-value="false">This is a private {{ formTitle }}.</b-form-checkbox>
           <b-form-textarea v-if="accessPrivate" id="access" v-model="access" rows="3" required minlength="100" maxlength="1000"></b-form-textarea>
-          <b-form-text v-if="accessPrivate">Please give information how interested parties can gain access to the {{ formTitle }}. Min. 100 chars, max. 1000 chars.</b-form-text>
+          <b-form-text v-if="accessPrivate">Please give information how interested parties can gain access to the {{ formTitle }}. CommonMark (Markdown) is supported. Min. 100 chars, max. 1000 chars.</b-form-text>
         </b-form-group>
         <b-button type="submit" variant="primary">Submit</b-button>
       </template>

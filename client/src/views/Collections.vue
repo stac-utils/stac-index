@@ -18,11 +18,14 @@
           <div class="d-flex w-100 justify-content-between">
             <h5 class="mb-1">{{ col.title }}</h5>
             <small>
-              <b-badge v-if="col.isPrivate" variant="dark">Private</b-badge>
-              <b-badge variant="success">Public</b-badge>
+              <b-badge v-if="col.isPrivate" variant="dark" :id="'col_access_' + i">Private</b-badge>
+              <b-badge v-else variant="success">Public</b-badge>
+              <b-tooltip :target="'col_access_' + i" triggers="hover">
+                <Description :description="col.access" />
+              </b-tooltip>
             </small>
           </div>
-          <p class="mb-1">{{ col.summary }}</p>
+          <Description :description="col.summary" />
           <small><code>{{ col.url }}</code></small>
         </b-list-group-item>
       </b-list-group>
@@ -31,8 +34,13 @@
 </template>
 
 <script>
+import { Description } from '@openeo/vue-components';
+
 export default {
   name: 'Collections',
+  components: {
+    Description
+  },
   props: {
     access: {
       type: Boolean,

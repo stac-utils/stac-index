@@ -1,0 +1,39 @@
+{
+  "name": "stac-index-server",
+  "version": "0.0.1",
+  "description": "The server component for STAC Index.",
+  "keywords": [
+    "stac",
+    "index",
+    "server"
+  ],
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "nodemon src/server.js --trace-warnings",
+    "up": "forever start -a -l forever.log -o forever-out.log -e forever-err.log src/server.js",
+    "down": "forever stop src/server.js",
+    "debug": "node --nolazy --inspect src/server.js"
+  },
+  "author": "Matthias Mohr",
+  "license": "Apache-2.0",
+  "homepage": "http://stac-index.lutana.de",
+  "bugs": {
+    "url": "https://github.com/stac-utils/stac-index/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stac-utils/stac-index.git"
+  },
+  "devDependencies": {
+    "forever": "^3.0.0",
+    "nodemon": "^2.0.4"
+  },
+  "dependencies": {
+    "axios": "^0.19.2",
+    "fs-extra": "^9.0.1",
+    "list-of-programming-languages": "^2.0.2",
+    "lodash": "^4.17.20",
+    "nedb": "^1.8.0",
+    "restify": "^8.3.3"
+  }
+}

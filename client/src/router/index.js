@@ -23,7 +23,8 @@ Vue.use(VueRouter)
   {
     path: '/ecosystem',
     name: 'Ecosystem',
-    component: () => import(/* webpackChunkName: "ecosystem" */ '../views/Ecosystem.vue')
+    component: () => import(/* webpackChunkName: "ecosystem" */ '../views/Ecosystem.vue'),
+    props: route => ({ category: route.query.category, language: route.query.language })
   },
   {
     path: '/add',

@@ -11,8 +11,8 @@
 
         <b-collapse id="nav-collapse" is-nav>
           <b-navbar-nav>
-            <b-nav-item to="/collections">Collections</b-nav-item>
-            <b-nav-item to="/apis">APIs</b-nav-item>
+            <b-nav-item to="/collections" disabled>Collections</b-nav-item>
+            <b-nav-item to="/apis" disabled>APIs</b-nav-item>
             <b-nav-item to="/ecosystem">Ecosystem</b-nav-item>
           </b-navbar-nav>
 
@@ -55,9 +55,12 @@ main {
   color: #144E63;
 }
 
-#app nav a {
+#app nav a, #app .nav a {
   color: white;
   font-weight: bold;
+}
+#app nav a.disabled, #app .nav a.disabled {
+  opacity: 0.5;
 }
 #app nav a:hover {
   color: #09B3AD;
@@ -67,5 +70,18 @@ main {
 }
 #app nav .nav-logo {
   height: 30px;
+}
+#app .nav-pills a.active {
+  background-color: #144E63;
+  color: white;
+  font-weight: normal;
+}
+#app .nav-pills a {
+  color: #144E63;
+  font-weight: normal;
+}
+
+#app .badge {
+  margin: 1px;
 }
 </style>

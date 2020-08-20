@@ -35,5 +35,10 @@
     "lodash": "^4.17.20",
     "nedb": "^1.8.0",
     "restify": "^8.3.3"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "storage/*"
+    ]
   }
 }

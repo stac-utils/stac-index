@@ -1,4 +1,4 @@
-const languages = require('list-of-programming-languages');
+const LANGUAGES = require('list-of-programming-languages');
 const Datastore = require('nedb');
 
 const emailRegExp = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
@@ -8,7 +8,19 @@ module.exports = class Data {
 	constructor(storagePath) {
 		this.ecosystem = this.load('ecosystem', storagePath);
 		this.catalogs = this.load('catalogs', storagePath);
-		this.languages = this.loadLanguages();
+		this.categories = [
+			'API',
+			'CLI',
+			'Client',
+			'Data Creation',
+			'Data Processing',
+			'Other',
+			'Server',
+			'Static',
+			'Validation',
+			'Visualization'
+		];
+		this.loadLanguages();
 	}
 
 
@@ -19,7 +31,7 @@ module.exports = class Data {
 	}
 
 	loadLanguages() {
-		this.languages = languages.itemListElement.map(item => item.item.name);
+		this.languages = LANGUAGES.itemListElement.map(item => item.item.name);
 		this.languages.push('Web');
 		this.languages.push('Other');
 		this.languages.sort();
@@ -30,17 +42,7 @@ module.exports = class Data {
 	}
 
 	getCategories() {
-		return [
-			'API',
-			'CLI',
-			'Client',
-			'Data Creation',
-			'Data Processing',
-			'Other',
-			'Server',
-			'Static',
-			'Validator'
-		];
+		return this.categories;
 	}
 
 	async getEcosystem() {
@@ -105,7 +107,7 @@ module.exports = class Data {
 		email = this.checkEmail(email);
 		
 		return new Promise((resolve, reject) => {
-			var data = {url, title, summary, categories, languages, email};
+			var data = {url, title, summary, categories, language, email};
 			this.ecosystem.insert(data, (err, ecosystem) => {
 				if (err) {
 					reject(err);
@@ -168,6 +170,9 @@ module.exports = class Data {
 		if (typeof access !== 'string') {
 			return null;
 		}
+		else if (access.length < 100) {
+			throw new Error('Access information must be at least 100 characters');
+		}
 		else if (access.length > 1000) {
 			throw new Error('Access information must be no longer than 1000 characters');
 		}
@@ -178,30 +183,41 @@ module.exports = class Data {
 		if (typeof summary !== 'string') {
 			throw new Error('Summary is not a string');
 		}
-		else if (summary.length < 100) {
-			throw new Error('Summary must be at least 100 characters');
+		else if (summary.length < 50) {
+			throw new Error('Summary must be at least 50 characters');
 		}
-		else if (summary.length > 1000) {
-			throw new Error('Summary must be no longer than 1000 characters');
+		else if (summary.length > 500) {
+			throw new Error('Summary must be no longer than 500 characters');
 		}
 		return summary;
 	}
 
 	checkLanguage(lang) {
-		if (typeof lang !== 'string') {
+		if (typeof lang !== 'string' || lang.length === 0) {
 			return null;
 		}
 		if (!this.languages.includes(lang)) {
-			throw new Error('Programming Language is invalid');
+			throw new Error('Programming Language "' + lang + '" is invalid');
 		}
 		return lang;
 	}
 
+	checkCategories(categories) {
+		if (!Array.isArray(categories)) {
+			return [];
+		}
+		let invalidCategory = categories.find(cat => !this.categories.includes(cat));
+		if (invalidCategory) {
+			throw new Error('Category "' + invalidCategory + '" is invalid');
+		}
+		return categories;
+	}
+
 	checkEmail(email) {
-		if (typeof email !== 'string') {
+		if (typeof email !== 'string' || email.length === 0) {
 			return null;
 		}
-		if (!emailRegExp.match(email)) {
+		if (!email.match(emailRegExp)) {
 			throw new Error('Email is invalid');
 		}
 		return email;

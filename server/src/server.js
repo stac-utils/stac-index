@@ -165,8 +165,9 @@ class Server {
 					let catalog = await axios(req.body.url);
 					if (Utils.isPlainObject(catalog.data) && typeof catalog.data.id === 'string' && typeof catalog.data.description === 'string' && Array.isArray(catalog.data.links)) {
 						try {
-							await this.data.addCatalog(req.body.type === 'api', req.body.url, req.body.summary, req.body.access, req.body.email);
-							return next(200);
+							let catalog = await this.data.addCatalog(req.body.type === 'api', req.body.url, req.body.summary, req.body.access, req.body.email);
+							res.send(200, catalog);
+							return next();
 						} catch (e) {
 							res.send(400, e.message);
 							return next();
@@ -182,8 +183,9 @@ class Server {
 				}
 			case 'ecosystem':
 				try {
-					await this.data.addEcosystem(req.body.url, req.body.title, req.body.summary, req.body.language, req.body.email);
-					return next(200);
+					let eco = await this.data.addEcosystem(req.body.url, req.body.title, req.body.summary, req.body.categories, req.body.language, req.body.email);
+					res.send(200, eco);
+					return next();
 				} catch (e) {
 					res.send(400, e.message);
 					return next();

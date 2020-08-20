@@ -74,7 +74,7 @@ module.exports = class Data {
 
 	async getCollections() {
 		return new Promise((resolve, reject) => {
-			this.catalogs.find({}, function (err, data) {
+			this.catalogs.find({isApi: false}, function (err, data) {
 				if (err) {
 					reject(err);
 				}
@@ -119,12 +119,13 @@ module.exports = class Data {
 		});
 	}
 
-	async addCatalog(isApi, url, summary, access = null, email = null) {
+	async addCatalog(isApi, url, title, summary, access = null, email = null) {
 		if (typeof isApi !== 'boolean') {
 			isApi = false;
 		}
 		url = this.checkUrl(url);
 		access = this.checkAccess(access);
+		title = this.checkTitle(title);
 		summary = this.checkSummary(summary);
 		email = this.checkEmail(email);
 		let isPrivate = false;
@@ -133,7 +134,7 @@ module.exports = class Data {
 		}
 
 		return new Promise((resolve, reject) => {
-			var data = {isApi, isPrivate, url, summary, access, email};
+			var data = {isApi, isPrivate, url, title, summary, access, email};
 			this.catalogs.insert(data, (err, catalog) => {
 				if (err) {
 					reject(err);

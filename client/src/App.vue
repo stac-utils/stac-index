@@ -11,8 +11,8 @@
 
         <b-collapse id="nav-collapse" is-nav>
           <b-navbar-nav>
-            <b-nav-item to="/collections" disabled>Collections</b-nav-item>
-            <b-nav-item to="/apis" disabled>APIs</b-nav-item>
+            <b-nav-item to="/collections">Collections</b-nav-item>
+            <b-nav-item to="/apis">APIs</b-nav-item>
             <b-nav-item to="/ecosystem">Ecosystem</b-nav-item>
           </b-navbar-nav>
 
@@ -65,7 +65,7 @@ main {
 #app nav a:hover {
   color: #09B3AD;
 }
-#app nav a.router-link-exact-active {
+#app nav a.router-link-active {
   color: #09B3AD;
 }
 #app nav .nav-logo {
@@ -83,5 +83,8 @@ main {
 
 #app .badge {
   margin: 1px;
+}
+#app h6 {
+  margin-top: 1em;
 }
 </style>

@@ -14,11 +14,12 @@
           <b-form-input id="url" type="url" v-model="url" required></b-form-input>
           <b-form-text>This URL must be publicly accessible.</b-form-text>
         </b-form-group>
-        <b-form-group v-if="fields.includes('title')" label="Name of the software or tool:" label-for="title">
-          <b-form-input id="title" type="text" v-model="title" required></b-form-input>
+        <b-form-group v-if="fields.includes('title')" :label="type === 'ecosystem' ? 'Name of the software or tool:' : 'Title:'" label-for="title">
+          <b-form-input id="title" type="text" v-model="title" required minlength="3" maxlength="50"></b-form-input>
+          <b-form-text>Min. 3 chars, max. 50 chars.</b-form-text>
         </b-form-group>
         <b-form-group v-if="fields.includes('summary')" label="Summary:" label-for="summary">
-          <b-form-textarea id="summary" v-model="summary" rows="3" required></b-form-textarea>
+          <b-form-textarea id="summary" v-model="summary" rows="3" required minlength="50" maxlength="500"></b-form-textarea>
           <b-form-text>Short summary about the {{ formTitle }}. Min. 50 chars, max. 500 chars.</b-form-text>
         </b-form-group>
         <b-form-group v-if="fields.includes('categories')" label="Categories:" label-for="categories">
@@ -34,7 +35,7 @@
         </b-form-group>
         <b-form-group v-if="fields.includes('private')" label="Access:" label-for="private">
           <b-form-checkbox id="private" v-model="accessPrivate" name="private" :value="true" :unchecked-value="false">This is a private {{ formTitle }}.</b-form-checkbox>
-          <b-form-textarea v-if="accessPrivate" id="access" v-model="access" rows="3" required></b-form-textarea>
+          <b-form-textarea v-if="accessPrivate" id="access" v-model="access" rows="3" required minlength="100" maxlength="1000"></b-form-textarea>
           <b-form-text v-if="accessPrivate">Please give information how interested parties can gain access to the {{ formTitle }}. Min. 100 chars, max. 1000 chars.</b-form-text>
         </b-form-group>
         <b-button type="submit" variant="primary">Submit</b-button>
@@ -92,12 +93,11 @@ export default {
       }
     },
     fields() {
-      let fields = ['url', 'summary', 'email'];
+      let fields = ['url', 'title', 'summary', 'email'];
       if (this.type === 'catalog' || this.type === 'api') {
         fields.push('private');
       }
       else if (this.type === 'ecosystem') {
-        fields.push('title');
         fields.push('language');
         fields.push('categories');
       }

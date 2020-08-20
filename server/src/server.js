@@ -171,7 +171,7 @@ class Server extends Config {
 					let catalog = await axios(req.body.url);
 					if (Utils.isPlainObject(catalog.data) && typeof catalog.data.id === 'string' && typeof catalog.data.description === 'string' && Array.isArray(catalog.data.links)) {
 						try {
-							let catalog = await this.data.addCatalog(req.body.type === 'api', req.body.url, req.body.summary, req.body.access, req.body.email);
+							let catalog = await this.data.addCatalog(req.body.type === 'api', req.body.url, req.body.title, req.body.summary, req.body.access, req.body.email);
 							res.send(200, catalog);
 							return next();
 						} catch (e) {

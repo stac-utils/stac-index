@@ -4,7 +4,18 @@ import Home from '../views/Home.vue'
 
 Vue.use(VueRouter)
 
-  const routes = [
+function toBoolean(str) {
+  switch(str) {
+    case 'true':
+      return true;
+    case 'false':
+      return false;
+    default:
+      return null;
+  }
+}
+
+const routes = [
   {
     path: '/',
     name: 'Home',
@@ -13,12 +24,14 @@ Vue.use(VueRouter)
   {
     path: '/collections',
     name: 'Collections',
-    component: () => import(/* webpackChunkName: "collections" */ '../views/Collections.vue')
+    component: () => import(/* webpackChunkName: "collections" */ '../views/Collections.vue'),
+    props: route => ({ access: toBoolean(route.query.access) })
   },
   {
     path: '/apis',
     name: 'APIs',
-    component: () => import(/* webpackChunkName: "apis" */ '../views/APIs.vue')
+    component: () => import(/* webpackChunkName: "apis" */ '../views/APIs.vue'),
+    props: route => ({ access: toBoolean(route.query.access) })
   },
   {
     path: '/ecosystem',

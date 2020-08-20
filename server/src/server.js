@@ -3,25 +3,18 @@ const fse = require('fs-extra');
 const axios = require('axios');
 const Utils = require('lodash');
 const Data = require('./data');
+const Config = require('./config');
 
-class Server {
+class Server extends Config {
 
 	constructor() {
+		super();
+
 		console.info('Initializing STAC Index Server...');
-		this.debug = true;
-		this.hostname = "localhost";
-		this.port = 8080;
+
 		this.http_server = null;
 		this.https_server = null;
-		this.ssl = {
-			port: 443,
-			key: null,
-			certificate: null
-		};
-		this.serverOptions = {
-			ignoreTrailingSlash: true
-		};
-		this.corsExposeHeaders = 'Location';
+
 		this.afterServerStartListener = [];
 		this.data = new Data('storage/');
 

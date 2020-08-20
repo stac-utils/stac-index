@@ -19,7 +19,7 @@
         </b-form-group>
         <b-form-group v-if="fields.includes('summary')" label="Summary:" label-for="summary">
           <b-form-textarea id="summary" v-model="summary" rows="3" required></b-form-textarea>
-          <b-form-text>Short summary about the {{ formTitle }}. Min. 100 chars, max. 1000 chars.</b-form-text>
+          <b-form-text>Short summary about the {{ formTitle }}. Min. 50 chars, max. 500 chars.</b-form-text>
         </b-form-group>
         <b-form-group v-if="fields.includes('categories')" label="Categories:" label-for="categories">
           <multiselect v-model="categories" :options="categoryList" :multiple="true" :taggable="true"></multiselect>

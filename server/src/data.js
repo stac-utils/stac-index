@@ -127,6 +127,7 @@ module.exports = class Data {
 		access = this.checkAccess(access);
 		summary = this.checkSummary(summary);
 		email = this.checkEmail(email);
+		let isPrivate = false;
 		if (typeof access === 'string' && access.length > 0) {
 			isPrivate = true;
 		}

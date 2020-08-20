@@ -9,7 +9,7 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 Vue.config.productionTip = false
 
 Vue.prototype.$axios = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: 'http://localhost:9999',
   timeout: 10000,
 })
 

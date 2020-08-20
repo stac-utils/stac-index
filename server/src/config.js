@@ -2,7 +2,7 @@ module.exports = class Config {
 	constructor() {
 		this.debug = true;
 		this.hostname = "localhost";
-		this.port = 80;
+		this.port = 9999;
 		this.ssl = {
 			port: 443,
 			key: null,

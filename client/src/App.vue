@@ -46,13 +46,13 @@ main {
 }
 
 #app h1, #app h2, #app h3, #app h4, #app h5, #app h6 {
-  color: #144E63 !important;
+  color: #144E63;
 }
 
-#app a {
+#app a, #app .list-group-item .styled-description a, #app a.list-group-item h5 {
   color: #09B3AD;
 }
-#app a:hover {
+#app a:hover, #app .list-group-item .styled-description a:hover, #app a:hover.list-group-item h5 {
   color: #144E63;
 }
 
@@ -88,7 +88,7 @@ main {
   color: #144E63;
   font-weight: normal;
 }
-#app .list-group-item small {
+#app .list-group-item small, #app a.list-group-item  {
   color: black;
 }
 

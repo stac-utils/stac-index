@@ -1,13 +1,29 @@
 {
   "name": "stac-index-client",
   "version": "0.0.1",
+  "description": "The client component for STAC Index.",
+  "keywords": [
+    "stac",
+    "index",
+    "client"
+  ],
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
+  "author": "Matthias Mohr",
+  "license": "Apache-2.0",
+  "homepage": "http://stac-index.lutana.de",
+  "bugs": {
+    "url": "https://github.com/stac-utils/stac-index/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stac-utils/stac-index.git"
+  },
   "dependencies": {
-    "@openeo/vue-components": "^1.0.0-rc.1",
+    "@openeo/vue-components": "^1.0.0-rc.2",
     "axios": "^0.19.2",
     "bootstrap": "^4.5.2",
     "bootstrap-vue": "^2.16.0",

@@ -25,7 +25,13 @@ module.exports = class Data {
 
 
 	load(name, folder) {
-		let db = new Datastore({ filename: folder + name + '.db', autoload: true });
+		let db = new Datastore({
+			filename: folder + name + '.db',
+			autoload: true,
+			compareStrings: (a, b) => {
+				return a.toLowerCase().localeCompare(b.toLowerCase());
+			}
+		});
 		db.persistence.setAutocompactionInterval(24 * 60 * 60 * 1000); // Once every day
 		return db;
 	}

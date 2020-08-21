@@ -31,6 +31,7 @@
 <style>
 main {
   padding-top: 30px;
+  padding-bottom: 15px;
 }
 
 #app {

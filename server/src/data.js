@@ -47,7 +47,7 @@ module.exports = class Data {
 
 	async getEcosystem() {
 		return new Promise((resolve, reject) => {
-			this.ecosystem.find({}, function (err, data) {
+			this.ecosystem.find({}).sort({ title: 1 }).exec(function (err, data) {
 				if (err) {
 					reject(err);
 				}
@@ -60,7 +60,7 @@ module.exports = class Data {
 
 	async getApis() {
 		return new Promise((resolve, reject) => {
-			this.catalogs.find({isApi: true}, function (err, data) {
+			this.catalogs.find({isApi: true}).sort({ title: 1 }).exec(function (err, data) {
 				if (err) {
 					reject(err);
 				}
@@ -74,7 +74,7 @@ module.exports = class Data {
 
 	async getCollections() {
 		return new Promise((resolve, reject) => {
-			this.catalogs.find({isApi: false}, function (err, data) {
+			this.catalogs.find({isApi: false}).sort({ title: 1 }).exec(function (err, data) {
 				if (err) {
 					reject(err);
 				}

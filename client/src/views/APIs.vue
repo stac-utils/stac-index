@@ -3,7 +3,7 @@
     <h1>STAC APIs</h1>
     <p>A list of STAC APIs. This is WIP!</p>
     <b-spinner v-if="apis === null" label="Loading..."></b-spinner>
-    <b-alert v-else-if="typeof apis === 'string'" variant="error" show>{{ apis }}</b-alert>
+    <b-alert v-else-if="typeof apis === 'string'" variant="danger" show>{{ apis }}</b-alert>
     <template v-else>
       <h6>Filter by Access Level</h6>
       <b-nav pills small>
@@ -14,7 +14,7 @@
       <hr />
       <b-alert v-if="filtered.length === 0" show>No API found.</b-alert>
       <b-list-group v-else>
-        <b-list-group-item v-for="(api,i) in filtered" :key="i" :href="api.url" target="_blank" class="flex-column align-items-start">
+        <b-list-group-item v-for="(api,i) in filtered" :key="i" :to="'/apis/' + api._id" class="flex-column align-items-start">
           <div class="d-flex w-100 justify-content-between">
             <h5 class="mb-1">{{ api.title }}</h5>
             <small>

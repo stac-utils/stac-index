@@ -3,7 +3,7 @@
     <h1>STAC Collections</h1>
     <p>A list of STAC Collections. This is WIP and currently only shows a list of the static catalogs!</p>
     <b-spinner v-if="collections === null" label="Loading..."></b-spinner>
-    <b-alert v-else-if="typeof collections === 'string'" variant="error" show>{{ collections }}</b-alert>
+    <b-alert v-else-if="typeof collections === 'string'" variant="danger" show>{{ collections }}</b-alert>
     <template v-else>
       <h6>Filter by Access Level</h6>
       <b-nav pills small>

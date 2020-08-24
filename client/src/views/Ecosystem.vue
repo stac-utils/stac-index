@@ -3,7 +3,7 @@
     <h1>Ecosystem</h1>
     <p>A list of software and tools for STAC.</p>
     <b-spinner v-if="ecosystem === null" label="Loading..."></b-spinner>
-    <b-alert v-else-if="typeof ecosystem === 'string'" variant="error" show>{{ ecosystem }}</b-alert>
+    <b-alert v-else-if="typeof ecosystem === 'string'" variant="danger" show>{{ ecosystem }}</b-alert>
     <template v-else>
       <h6>Filter by Category</h6>
       <b-nav pills small>

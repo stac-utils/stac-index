@@ -34,6 +34,12 @@ const routes = [
     props: route => ({ access: toBoolean(route.query.access) })
   },
   {
+    path: '/apis/:id',
+    name: 'API Collections',
+    component: () => import(/* webpackChunkName: "apiCollections" */ '../views/ApiCollections.vue'),
+    props: route => ({ id: route.params.id })
+  },
+  {
     path: '/ecosystem',
     name: 'Ecosystem',
     component: () => import(/* webpackChunkName: "ecosystem" */ '../views/Ecosystem.vue'),

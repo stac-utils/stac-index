@@ -1,5 +1,7 @@
 const LANGUAGES = require('list-of-programming-languages');
 const Datastore = require('nedb');
+const axios = require('axios');
+const Utils = require('lodash');
 
 const emailRegExp = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 

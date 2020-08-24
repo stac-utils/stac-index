@@ -1,6 +1,5 @@
 const restify = require('restify');
 const fse = require('fs-extra');
-const axios = require('axios');
 const Utils = require('lodash');
 const Data = require('./data');
 const Config = require('./config');

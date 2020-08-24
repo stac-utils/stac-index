@@ -43,6 +43,16 @@ const routes = [
     path: '/add',
     name: 'Add',
     component: () => import(/* webpackChunkName: "add" */ '../views/Add.vue')
+  },
+  {
+    path: '/contact',
+    name: 'Contact',
+    component: () => import(/* webpackChunkName: "contact" */ '../views/Contact.vue')
+  },
+  {
+    path: '/privacy',
+    name: 'Privacy Policy',
+    component: () => import(/* webpackChunkName: "privacy" */ '../views/Privacy.vue')
   }
 ]
 

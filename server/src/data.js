@@ -105,7 +105,7 @@ module.exports = class Data {
 	}
 	
 	async addEcosystem(url, title, summary, categories = [], language = null, email = null) {
-		url = this.checkUrl(url);
+		url = await this.checkUrl(url);
 		title = this.checkTitle(title);
 		summary = this.checkSummary(summary);
 		categories = this.checkCategories(categories);
@@ -129,15 +129,17 @@ module.exports = class Data {
 		if (typeof isApi !== 'boolean') {
 			isApi = false;
 		}
-		url = this.checkUrl(url);
+
 		access = this.checkAccess(access);
-		title = this.checkTitle(title);
-		summary = this.checkSummary(summary);
-		email = this.checkEmail(email);
 		let isPrivate = false;
 		if (typeof access === 'string' && access.length > 0) {
 			isPrivate = true;
 		}
+
+		url = await this.checkUrl(url, !isPrivate);
+		title = this.checkTitle(title);
+		summary = this.checkSummary(summary);
+		email = this.checkEmail(email);
 
 		return new Promise((resolve, reject) => {
 			var data = {isApi, isPrivate, url, title, summary, access, email};
@@ -152,13 +154,30 @@ module.exports = class Data {
 		});
 	}
 
-	checkUrl(url) {
+	async checkUrl(url, checkCatalog = false) {
 		try {
 			require('url').parse(url);
 		} catch (e) {
 			throw new Error('URL is invalid');
 		}
-		return url;
+
+		// ToDo: Check that URL is not in database yet
+
+		if (!checkCatalog) {
+			return url;
+		}
+
+		try {
+			let catalog = await axios(url);
+			if (Utils.isPlainObject(catalog.data) && typeof catalog.data.id === 'string' && typeof catalog.data.description === 'string' && Array.isArray(catalog.data.links)) {
+				return url;
+			}
+			else {
+				throw new Error("A catalog can't be found at the URL given.");
+			}
+		} catch (e) {
+			throw new Error("The URL given returned an error. Is this a private Catalog or API?");
+		}
 	}
 
 	checkTitle(title) {

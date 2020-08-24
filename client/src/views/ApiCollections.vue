@@ -5,7 +5,13 @@
     <template v-else>
       <h1>STAC Collections for {{ api.title }}</h1>
       <p><a :href="api.url" target="_blank"><code>{{ api.url }}</code></a></p>
-      <b-spinner v-if="collections === null" label="Loading..."></b-spinner>
+      <template v-if="api.isPrivate">
+        <b-alert variant="info" show>
+          <p><strong>This API is private!</strong></p>
+          <Description :description="api.access" />
+        </b-alert>
+      </template>
+      <b-spinner v-else-if="collections === null" label="Loading..."></b-spinner>
       <b-alert v-else-if="typeof collections === 'string'" variant="warning" show>{{ collections }}</b-alert>
       <b-container class="collection-list" v-else>
         <Collection v-for="c in collections" :key="c.id" :collectionData="c" :initiallyCollapsed="true" :mapOptions="{scrollWheelZoom: false, wrapAroundAntimeridian: false}"></Collection>
@@ -16,13 +22,14 @@
 
 <script>
 import isPlainObject from 'lodash/isPlainObject';
-import { Collection } from '@openeo/vue-components';
+import { Collection, Description } from '@openeo/vue-components';
 import "leaflet/dist/leaflet.css";
 
 export default {
   name: 'ApiCollections',
   components: {
-    Collection
+    Collection,
+    Description
   },
   props: {
     id: {
@@ -32,7 +39,8 @@ export default {
   data() {
     return {
       api: null,
-      collections: null
+      collections: null,
+      showAccess: false
     };
   },
   async created() {
@@ -40,9 +48,11 @@ export default {
       let response = await this.$axios.get('/collections/' + this.id);
       if (!isPlainObject(response.data)) {
         this.api = "STAC API information retrieved from the server are invalid.";
+        return;
       }
       else if (!response.data.isApi) {
         this.api = "Requested dataset is not an API.";
+        return;
       }
       else {
         this.api = response.data;
@@ -52,6 +62,9 @@ export default {
       return;
     }
     try {
+      if (this.api.isPrivate) {
+        return;
+      }
       let response = await this.$axios.get(this.api.url + '/collections');
       if (!isPlainObject(response.data) || !Array.isArray(response.data.collections)) {
         this.collections = "STAC API collections retrieved from the server are invalid.";
@@ -61,7 +74,6 @@ export default {
       }
     } catch (error) {
       this.collections = "Can't load collections from the server, please follow the link above.";
-      return;
     }
   }
 }

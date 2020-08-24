@@ -168,23 +168,11 @@ class Server extends Config {
 			case 'api':
 			case 'catalog':
 				try {
-					let catalog = await axios(req.body.url);
-					if (Utils.isPlainObject(catalog.data) && typeof catalog.data.id === 'string' && typeof catalog.data.description === 'string' && Array.isArray(catalog.data.links)) {
-						try {
-							let catalog = await this.data.addCatalog(req.body.type === 'api', req.body.url, req.body.title, req.body.summary, req.body.access, req.body.email);
-							res.send(200, catalog);
-							return next();
-						} catch (e) {
-							res.send(400, e.message);
-							return next();
-						}
-					}
-					else {
-						res.send(400, "A catalog can't be found at the URL given.");
-						return next();
-					}
+					let catalog = await this.data.addCatalog(req.body.type === 'api', req.body.url, req.body.title, req.body.summary, req.body.access, req.body.email);
+					res.send(200, catalog);
+					return next();
 				} catch (e) {
-					res.send(400, "The URL given returned an error.");
+					res.send(400, e.message);
 					return next();
 				}
 			case 'ecosystem':

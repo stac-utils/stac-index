@@ -28,6 +28,7 @@ module.exports = class Data {
 		let db = new Datastore({
 			filename: folder + name + '.db',
 			autoload: true,
+			timestampData: true,
 			compareStrings: (a, b) => {
 				return a.toLowerCase().localeCompare(b.toLowerCase());
 			}

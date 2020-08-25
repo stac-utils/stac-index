@@ -31,9 +31,11 @@
 </template>
 
 <style>
-main {
-  padding-top: 30px;
-  padding-bottom: 15px;
+
+html, body, #app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 #app {
@@ -41,6 +43,17 @@ main {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: black;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex-grow: 1;
+}
+
+#app .content {
+  padding-top: 30px;
+  padding-bottom: 15px;
 }
 
 #app .bg-info {

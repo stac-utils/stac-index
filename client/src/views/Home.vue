@@ -1,5 +1,5 @@
 <template>
-  <b-container class="home">
+  <b-container class="content home">
     <img alt="STAC logo" class="logo" src="../assets/logo.png">
     <div class="hello">
       <h1>Welcome to the STAC Index!</h1>

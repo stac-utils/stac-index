@@ -1,5 +1,5 @@
 <template>
-  <b-container class="ecosystem">
+  <b-container class="content ecosystem">
     <h1>Ecosystem</h1>
     <p>A list of software and tools for STAC.</p>
     <b-spinner v-if="ecosystem === null" label="Loading..."></b-spinner>

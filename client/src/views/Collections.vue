@@ -1,5 +1,5 @@
 <template>
-  <b-container class="collections">
+  <b-container class="content collections">
     <h1>STAC Collections</h1>
     <p>A list of STAC Collections. This is WIP and currently only shows a list of the static catalogs!</p>
     <b-spinner v-if="collections === null" label="Loading..."></b-spinner>
@@ -14,7 +14,7 @@
       <hr />
       <b-alert v-if="filtered.length === 0" show>No Collections found.</b-alert>
       <b-list-group v-else>
-        <b-list-group-item v-for="(col,i) in filtered" :key="i" :href="col.url" target="_blank" class="flex-column align-items-start">
+        <b-list-group-item v-for="(col,i) in filtered" :key="i" :to="'/browse/' + col._id" class="flex-column align-items-start">
           <div class="d-flex w-100 justify-content-between">
             <h5 class="mb-1">{{ col.title }}</h5>
             <small>

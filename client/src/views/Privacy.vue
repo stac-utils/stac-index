@@ -1,5 +1,5 @@
 <template>
-  <b-container class="home">
+  <b-container class="content home">
     <h1>Privacy policy</h1>
       <p>Responsible party pursuant to data protection laws, in particular the EU General Data Protection Regulation (GDPR), is the person listed on the <b-link to="/contact">Contact page</b-link>.</p>
       <h2>Your rights as the data subject</h2>

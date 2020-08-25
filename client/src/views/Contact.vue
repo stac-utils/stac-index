@@ -1,5 +1,5 @@
 <template>
-  <b-container class="contact">
+  <b-container class="content contact">
     <h1>Contact</h1>
     <p>
       This is a private project to promote the STAC specification. It is operated by:

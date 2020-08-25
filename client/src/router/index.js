@@ -34,9 +34,9 @@ const routes = [
     props: route => ({ access: toBoolean(route.query.access) })
   },
   {
-    path: '/apis/:id',
-    name: 'API Collections',
-    component: () => import(/* webpackChunkName: "apiCollections" */ '../views/ApiCollections.vue'),
+    path: '/browse/:id',
+    name: 'Browse',
+    component: () => import(/* webpackChunkName: "browse" */ '../views/Browse.vue'),
     props: route => ({ id: route.params.id })
   },
   {

@@ -1,5 +1,5 @@
 <template>
-  <b-container class="add">
+  <b-container class="content add">
     <h1>Add new Catalog or Tool</h1>
     <b-alert v-if="typeof error === 'string'" variant="danger" show>{{ error }}</b-alert>
     <b-alert v-else-if="typeof confirmation === 'string'" variant="success" show>{{ confirmation }}</b-alert>

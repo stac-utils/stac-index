@@ -14,7 +14,7 @@
       <hr />
       <b-alert v-if="filtered.length === 0" show>No Collections found.</b-alert>
       <b-list-group v-else>
-        <b-list-group-item v-for="(col,i) in filtered" :key="i" :to="'/browse/' + col._id" class="flex-column align-items-start">
+        <b-list-group-item v-for="(col,i) in filtered" :key="i" :to="col.isPrivate ? false : '/browse/' + col._id" class="flex-column align-items-start">
           <div class="d-flex w-100 justify-content-between">
             <h5 class="mb-1">{{ col.title }}</h5>
             <small>

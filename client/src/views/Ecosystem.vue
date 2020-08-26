@@ -18,25 +18,20 @@
       <hr />
       <b-alert v-if="filtered.length === 0" show>No tool or software found.</b-alert>
       <b-list-group v-else>
-        <b-list-group-item v-for="(eco,i) in filtered" :key="i" class="flex-column align-items-start">
-          <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1"><b-link :href="eco.url" target="_blank">{{ eco.title }}</b-link></h5>
-            <small><b-badge v-if="eco.language">{{ eco.language }}</b-badge></small>
-          </div>
-          <p class="mb-1">{{ eco.summary }}</p>
-          <small>
-            Categories:
-            <b-badge v-for="cat in eco.categories" :key="cat">{{ cat }}</b-badge>
-          </small>
-        </b-list-group-item>
+        <EcosystemItem v-for="data in filtered" :key="data._id" :data="data" />
       </b-list-group>
     </template>
   </b-container>
 </template>
 
 <script>
+import EcosystemItem from './EcosystemItem.vue';
+
 export default {
   name: 'Ecosystem',
+  components: {
+    EcosystemItem
+  },
   props: {
     language: {
       type: String,
@@ -104,6 +99,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-</style>

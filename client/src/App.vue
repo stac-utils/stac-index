@@ -2,7 +2,7 @@
   <div id="app">
     <header>
       <b-navbar toggleable="lg" type="dark" class="stac-nav" variant="info">
-        <b-navbar-brand href="#/">
+        <b-navbar-brand to="/" :exact="true">
           <img src="./assets/logo2.png" class="nav-logo d-inline-block align-top" alt="STAC Index">
           STAC Index
         </b-navbar-brand>

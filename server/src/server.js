@@ -140,6 +140,7 @@ class Server extends Config {
 		server.get('/apis', this.apis.bind(this));
 		server.get('/collections', this.collections.bind(this));
 		server.get('/collections/*', this.collectionById.bind(this));
+		server.get('/newest', this.newest.bind(this));
 	}
 
 	root(req, res, next) {
@@ -186,6 +187,16 @@ class Server extends Config {
 				}
 		}
 		res.send(400, "Invalid type specified.");
+		return next();
+	}
+
+	async newest(req, res, next) {
+		let ecosystem = await this.data.getNewestEcosystem();
+		let data = await this.data.getNewestData();
+		res.send({
+			ecosystem,
+			data
+		});
 		return next();
 	}
 

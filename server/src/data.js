@@ -67,9 +67,9 @@ module.exports = class Data {
 		});
 	}
 
-	async getApis() {
+	async getNewestEcosystem(recent = 3) {
 		return new Promise((resolve, reject) => {
-			this.catalogs.find({isApi: true}).sort({ title: 1 }).exec(function (err, data) {
+			this.ecosystem.find({}).sort({ createdAt: -1 }).limit(recent).exec(function (err, data) {
 				if (err) {
 					reject(err);
 				}
@@ -78,12 +78,37 @@ module.exports = class Data {
 				}
 			});
 		});
+	}
 
+	async getApis(recent = null) {
+		return new Promise((resolve, reject) => {
+			this.catalogs.find({isApi: false}).sort({ title: 1 }).exec(function (err, data) {
+				if (err) {
+					reject(err);
+				}
+				else {
+					resolve(data);
+				}
+			});
+		});
 	}
 
 	async getCollections() {
 		return new Promise((resolve, reject) => {
 			this.catalogs.find({isApi: false}).sort({ title: 1 }).exec(function (err, data) {
+				if (err) {
+					reject(err);
+				}
+				else {
+					resolve(data);
+				}
+			});
+		});
+	}
+
+	async getNewestData(recent = 3) {
+		return new Promise((resolve, reject) => {
+			this.catalogs.find({}).sort({ createdAt: -1 }).limit(recent).exec(function (err, data) {
 				if (err) {
 					reject(err);
 				}

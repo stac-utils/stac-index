@@ -174,6 +174,7 @@ export default {
       return {
         type: this.type,
         url: this.url,
+        slug: this.slug,
         title: this.title,
         summary: this.summary,
         language: this.language,

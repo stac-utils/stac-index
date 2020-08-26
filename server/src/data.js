@@ -114,6 +114,7 @@ module.exports = class Data {
 		categories = this.checkCategories(categories);
 		language = this.checkLanguage(language);
 		email = this.checkEmail(email);
+		this.checkDuplicates(this.ecosystem, url);
 		
 		return new Promise((resolve, reject) => {
 			var data = {url, title, summary, categories, language, email};
@@ -144,6 +145,10 @@ module.exports = class Data {
 		title = this.checkTitle(title);
 		summary = this.checkSummary(summary);
 		email = this.checkEmail(email);
+		this.checkDuplicates(this.catalogs, url);
+		if (await this.getCollection(slug)) {
+			throw new Error("Another catalog with the given slug exists. Please choose a different slug.");
+		}
 
 		return new Promise((resolve, reject) => {
 			var data = {isApi, isPrivate, slug, url, title, summary, access, email};
@@ -153,6 +158,22 @@ module.exports = class Data {
 				}
 				else {
 					resolve(catalog);
+				}
+			});
+		});
+	}
+
+	async checkDuplicates(db, url) {
+		return new Promise((resolve, reject) => {
+			db.findOne({url: url}, function (err, data) {
+				if (err) {
+					reject(err);
+				}
+				else if (data) {
+					reject(new Error("The given URL already exists."));
+				}
+				else {
+					resolve();
 				}
 			});
 		});

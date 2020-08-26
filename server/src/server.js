@@ -25,6 +25,7 @@ class Server extends Config {
 	}
 
 	async afterServerStart() {
+		console.info('Server is expected to be exposed at %s', this.serverUrl);
 		for(var listener of this.afterServerStartListener) {
 			await listener(this);
 		}
@@ -39,8 +40,8 @@ class Server extends Config {
 		this.initServer(this.http_server);
 		return new Promise((resolve) => {
 			this.http_server.listen(this.port, () => {
-				this.serverUrl = "http://" + this.hostname + (this.port !== 80 ? ":" + this.port : "");
-				console.info('HTTP-Server listening at %s', this.serverUrl);
+				this.serverUrl = "http://" + this.hostname + (this.exposedPort !== 80 ? ":" + this.exposedPort : "") + this.exposedPath;
+				console.info('HTTP-Server listening at %s', "http://" + this.hostname + (this.port !== 80 ? ":" + this.port : ""));
 				resolve();
 			});
 		});
@@ -57,8 +58,8 @@ class Server extends Config {
 			return new Promise((resolve) => {
 				if (this.isHttpsEnabled()) {
 					this.https_server.listen(this.ssl.port, () => {
-						this.serverUrl = "https://" + this.hostname + ":" + this.ssl.port;
-						console.info('HTTPS-Server listening at %s', this.serverUrl);
+						this.serverUrl = "https://" + this.hostname + ":" + (this.ssl.exposedPort !== 443 ? ":" + this.ssl.exposedPort : "") + this.exposedPath;
+						console.info('HTTPS-Server listening at %s', "https://" + this.hostname + ":" + this.ssl.port);
 						resolve();
 					});
 				}

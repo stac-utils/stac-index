@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <nav>
+    <header>
       <b-navbar toggleable="lg" type="dark" class="stac-nav" variant="info">
         <b-navbar-brand href="#/">
           <img src="./assets/logo2.png" class="nav-logo d-inline-block align-top" alt="STAC Index">
@@ -23,7 +23,7 @@
           </b-navbar-nav>
         </b-collapse>
       </b-navbar>
-    </nav>
+    </header>
     <main>
       <router-view/>
     </main>
@@ -31,24 +31,11 @@
 </template>
 
 <style>
-
-html, body, #app {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
-
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: black;
-  display: flex;
-  flex-direction: column;
-}
-
-main {
-  flex-grow: 1;
 }
 
 #app .content {
@@ -70,28 +57,20 @@ main {
 #app a:hover, #app .list-group-item .styled-description a:hover, #app a:hover.list-group-item h5 {
   color: #144E63;
 }
-
-#app nav a, #app .nav a {
+#app .stac-nav a {
   color: white;
   font-weight: bold;
 }
-.tooltip a {
-  color: #09B3AD;
-}
-.tooltip a:hover {
-  color: white;
-  text-decoration: underline;
-}
-#app nav a.disabled, #app .nav a.disabled {
+#app .stac-nav a.disabled, #app .nav a.disabled {
   opacity: 0.5;
 }
-#app nav a:hover {
+#app .stac-nav a:hover {
   color: #09B3AD;
 }
-#app nav a.router-link-active {
+#app .stac-nav a.router-link-active {
   color: #09B3AD;
 }
-#app nav .nav-logo {
+#app .stac-nav .nav-logo {
   height: 30px;
 }
 #app .nav-pills a.active {
@@ -103,8 +82,17 @@ main {
   color: #144E63;
   font-weight: normal;
 }
+
 #app .list-group-item small, #app a.list-group-item  {
   color: black;
+}
+
+.tooltip a {
+  color: #09B3AD;
+}
+.tooltip a:hover {
+  color: white;
+  text-decoration: underline;
 }
 
 #app .badge {

@@ -1,9 +1,8 @@
 <template>
-  <div :class="{browse: true, container: !showBrowser, content: !showBrowser, browser: showBrowser}">
-    <iframe v-if="showBrowser" :src="url"></iframe>
-    <b-spinner v-else-if="collection === null" label="Loading..."></b-spinner>
+  <b-container class="browse content">
+    <b-spinner v-if="collection === null" label="Loading..."></b-spinner>
     <b-alert v-else-if="typeof collection === 'string'" variant="danger" show>{{ collection }}</b-alert>
-    <template v-else-if="collection.isPrivate">
+    <template v-else-if="!showBrowser">
       <h1>{{ collection.title }}</h1>
       <p><a :href="collection.url" target="_blank"><code>{{ collection.url }}</code></a></p>
       <b-alert variant="info" show>
@@ -14,7 +13,8 @@
         <Description :description="collection.access" />
       </b-alert>
     </template>
-  </div>
+    <div v-else id="stac-browser"></div>
+  </b-container>
 </template>
 
 <script>
@@ -47,7 +47,7 @@ export default {
       return isPlainObject(this.collection) && !this.collection.isPrivate;
     }
   },
-  async created() {
+  async mounted() {
     try {
       let response = await this.$axios.get('/collections/' + this.id);
       if (!isPlainObject(response.data)) {
@@ -56,6 +56,11 @@ export default {
       }
       else {
         this.collection = response.data;
+        if (this.showBrowser) {
+          await this.$nextTick();
+          let createBrowser = require('stac-browser/src/main').default;
+          let browser = await createBrowser(this.collection.url, this.$router.path);;
+        }
       }
     } catch (error) {
       this.collection = "Can't load information from the server: " + error.message;
@@ -64,14 +69,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.browser, .browser iframe {
-  height: 100%;
-  width: 100%;
-  border: 0;
-  margin: 0;
-  padding: 0;
-  display: block;
-}
-</style>

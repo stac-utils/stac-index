@@ -218,7 +218,7 @@ module.exports = class Data {
 		else if (!slug.match(/^[a-z0-9-]+$/)) {
 			throw new Error('Slug must only contain the following characters: a-z, 0-9, -');
 		}
-		return title;
+		return slug;
 	}
 
 	checkTitle(title) {

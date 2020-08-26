@@ -29,6 +29,7 @@
     "bootstrap-vue": "^2.16.0",
     "core-js": "^3.6.5",
     "lodash": "^4.17.20",
+    "slugify": "^1.4.5",
     "stac-browser": "github:m-mohr/stac-browser#stac-index",
     "vue": "^2.6.11",
     "vue-multiselect": "^2.1.6",

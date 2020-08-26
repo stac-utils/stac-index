@@ -21,6 +21,10 @@
           <b-form-input id="title" type="text" v-model="title" required minlength="3" maxlength="50"></b-form-input>
           <b-form-text>Min. 3 chars, max. 50 chars.</b-form-text>
         </b-form-group>
+        <b-form-group v-if="fields.includes('slug')" label="Slug" label-for="title">
+          <b-form-input id="slug" type="text" v-model="slug" required minlength="3" maxlength="50" @keydown="stopSlugGen" @mousedown="stopSlugGen"></b-form-input>
+          <b-form-text>Short identifier for the URL. Min. 3 chars, max. 50 chars. Allowed chars: <code>a-z</code>, <code>0-9</code>, <code>-</code></b-form-text>
+        </b-form-group>
         <b-form-group v-if="fields.includes('summary')" label="Summary:" label-for="summary">
           <b-form-textarea id="summary" v-model="summary" rows="3" required minlength="50" maxlength="500"></b-form-textarea>
           <b-form-text>Short summary about the {{ formTitle }}. CommonMark (Markdown) is supported. Min. 50 chars, max. 500 chars.</b-form-text>
@@ -48,7 +52,8 @@
 </template>
 
 <script>
-import Multiselect from 'vue-multiselect'
+import Multiselect from 'vue-multiselect';
+import slugify from 'slugify';
 
 export default {
   name: 'Add',
@@ -74,7 +79,8 @@ export default {
       categories: [],
       accessPrivate: false,
       access: null,
-      email: null
+      email: null,
+      customSlug: false
     };
   },
   watch: {
@@ -82,6 +88,14 @@ export default {
       if (newVal) {
         this.confirmation = null;
         this.error = null;
+      }
+    },
+    title(val) {
+      if (!this.customSlug) {
+        this.slug = slugify(val, {
+          lower: true,
+          strict: true
+        });
       }
     }
   },
@@ -98,6 +112,7 @@ export default {
     fields() {
       let fields = ['url', 'title', 'summary', 'email'];
       if (this.type === 'catalog' || this.type === 'api') {
+        fields.push('slug');
         fields.push('private');
       }
       else if (this.type === 'ecosystem') {
@@ -128,6 +143,9 @@ export default {
     }
   },
   methods: {
+    stopSlugGen() {
+      this.customSlug = true;
+    },
     reset() {
       this.type = null;
       this.url = null;
@@ -138,6 +156,7 @@ export default {
       this.accessPrivate = false;
       this.access = null;
       this.email = null;
+      this.customSlug = false;
     },
     async onSubmit(evt) {
       evt.preventDefault();

@@ -94,9 +94,9 @@ module.exports = class Data {
 		});
 	}
 
-	async getCollection(id) {
+	async getCollection(slug) {
 		return new Promise((resolve, reject) => {
-			this.catalogs.findOne({_id: id}, function (err, data) {
+			this.catalogs.findOne({slug: slug}, function (err, data) {
 				if (err) {
 					reject(err);
 				}
@@ -128,7 +128,7 @@ module.exports = class Data {
 		});
 	}
 
-	async addCatalog(isApi, url, title, summary, access = null, email = null) {
+	async addCatalog(isApi, url, slug, title, summary, access = null, email = null) {
 		if (typeof isApi !== 'boolean') {
 			isApi = false;
 		}
@@ -140,12 +140,13 @@ module.exports = class Data {
 		}
 
 		url = await this.checkUrl(url, !isPrivate);
+		slug = this.checkSlug(slug);
 		title = this.checkTitle(title);
 		summary = this.checkSummary(summary);
 		email = this.checkEmail(email);
 
 		return new Promise((resolve, reject) => {
-			var data = {isApi, isPrivate, url, title, summary, access, email};
+			var data = {isApi, isPrivate, slug, url, title, summary, access, email};
 			this.catalogs.insert(data, (err, catalog) => {
 				if (err) {
 					reject(err);
@@ -181,6 +182,22 @@ module.exports = class Data {
 		} catch (e) {
 			throw new Error("The URL given returned an error. Is this a private Catalog or API?");
 		}
+	}
+
+	checkSlug(slug) {
+		if (typeof slug !== 'string') {
+			throw new Error('Slug is not a string');
+		}
+		else if (slug.length < 3) {
+			throw new Error('Slug must be at least 3 characters');
+		}
+		else if (slug.length > 50) {
+			throw new Error('Slug must be no longer than 50 characters');
+		}
+		else if (!slug.match(/^[a-z0-9-]+$/)) {
+			throw new Error('Slug must only contain the following characters: a-z, 0-9, -');
+		}
+		return title;
 	}
 
 	checkTitle(title) {

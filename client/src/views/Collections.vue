@@ -16,7 +16,7 @@
       <b-list-group v-else>
         <b-list-group-item v-for="(col,i) in filtered" :key="i" class="flex-column align-items-start">
           <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1"><b-link :to="'/collections/' + col._id">{{ col.title }}</b-link></h5>
+            <h5 class="mb-1"><b-link :to="'/collections/' + col.slug">{{ col.title }}</b-link></h5>
             <small>
               <b-badge v-if="col.isPrivate" variant="dark" :id="'access_' + i">Private</b-badge>
               <b-badge v-else variant="success">Public</b-badge>

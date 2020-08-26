@@ -167,7 +167,7 @@ class Server extends Config {
 			case 'api':
 			case 'catalog':
 				try {
-					let catalog = await this.data.addCatalog(req.body.type === 'api', req.body.url, req.body.title, req.body.summary, req.body.access, req.body.email);
+					let catalog = await this.data.addCatalog(req.body.type === 'api', req.body.url, req.body.slug, req.body.title, req.body.summary, req.body.access, req.body.email);
 					res.send(200, catalog);
 					return next();
 				} catch (e) {
@@ -204,8 +204,8 @@ class Server extends Config {
 	}
 
 	async collectionById(req, res, next) {
-		var id = req.params['*'];
-		res.send(await this.data.getCollection(id));
+		var slug = req.params['*'];
+		res.send(await this.data.getCollection(slug));
 		return next();
 	}
 

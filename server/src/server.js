@@ -3,6 +3,19 @@ const fse = require('fs-extra');
 const Utils = require('lodash');
 const Data = require('./data');
 const Config = require('./config');
+const axios = require('axios');
+const { isPlainObject } = require('lodash');
+
+const LINK_REL = [
+	'child',
+	'collection',
+	'data',
+	'item',
+	'items',
+	'parent',
+	'root',
+	'self'
+];
 
 class Server extends Config {
 
@@ -141,6 +154,7 @@ class Server extends Config {
 		server.get('/collections', this.collections.bind(this));
 		server.get('/collections/*', this.collectionById.bind(this));
 		server.get('/newest', this.newest.bind(this));
+		server.get('/proxy', this.proxy.bind(this));
 	}
 
 	root(req, res, next) {
@@ -229,6 +243,63 @@ class Server extends Config {
 	categories(req, res, next) {
 		res.send(this.data.getCategories());
 		return next();
+	}
+
+	async proxy(req, res, next) {
+		let q = Object.keys(req.query);
+		if (q.length !== 1) {
+			res.send(400, "Query string invalid");
+			return next();
+		}
+
+		let url = q[0];
+		try {
+			url = await this.data.checkUrl(url);
+
+			let response = await axios.get(url, {
+				// `headers` are custom headers to be sent
+				headers: {'Accept': 'application/json'},
+				// `timeout` specifies the number of milliseconds before the request times out.
+				timeout: 1000,
+				// `maxContentLength` defines the max size of the http response content in bytes allowed in node.js
+				maxContentLength: 100000
+			});
+
+			if (!isPlainObject(response.data) || (typeof response.data.stac_version !== 'stac_version' && !Array.isArray(response.data.links))) {
+				throw new Error("Proxy only supports valid STAC");
+			}
+	
+			res.send(this.proxyLinks(response.data, url));
+		} catch (error) {
+			console.error(error);
+			res.send(400, error.message);
+		}
+		return next();
+	}
+
+	proxyLinks(obj, baseUrl) {
+		if (obj && typeof obj === 'object') {
+			for(let key in obj) {
+				let val = obj[key];
+				if (key === 'links' && Array.isArray(val)) {
+					obj[key] = val.map(link => {
+						if (typeof link.href === 'string' && LINK_REL.includes(link.rel)) {
+							if (link.href.match(/^https?:\/\//i)) {
+								link.href = this.serverUrl + '/proxy?' + encodeURIComponent(link.href);
+							}
+							else {
+								// ToDo: We can't handle relative URLs yet
+							}
+						}
+						return link;
+					});
+				}
+				else {
+					obj[key] = this.proxyLinks(val, baseUrl);
+				}
+			}
+		}
+		return obj;
 	}
 
 };

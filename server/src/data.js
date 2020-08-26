@@ -211,8 +211,6 @@ module.exports = class Data {
 			throw new Error('URL is invalid');
 		}
 
-		// ToDo: Check that URL is not in database yet
-
 		if (!checkCatalog) {
 			return url;
 		}

@@ -6,14 +6,19 @@
       <h1>{{ collection.title }}</h1>
       <p><a :href="collection.url" target="_blank"><code>{{ collection.url }}</code></a></p>
       <b-alert variant="info" show>
-        <p>
-          <strong v-if="collection.isApi">This API is private!</strong>
-          <strong v-else>This Collection is private!</strong>
-        </p>
+        <p><strong>This {{ type }} is private!</strong></p>
         <Description :description="collection.access" />
       </b-alert>
     </template>
-    <div v-else id="stac-browser"></div>
+    <template v-else>
+      <b-alert v-if="corsWarning" variant="warning" show>
+        This {{ type }} doesn't support <a href="https://developer.mozilla.org/de/docs/Web/HTTP/CORS" target="_blank">CORS</a>.
+        STAC Index tries to proxy the request, but links, images or other references might be broken while browing through the {{ type }}.
+        The URLs shown below will include the STAC Index proxy (<code>http://localhost:9999/proxy?</code>) and should not be used as provided in the browser.
+        Use the offical link to the {{ type }} instead:<br /><a :href="collection.url" target="_blank"><code>{{ collection.url }}</code></a>
+      </b-alert>
+      <div id="stac-browser"></div>
+    </template>
   </b-container>
 </template>
 
@@ -36,10 +41,14 @@ export default {
   },
   data() {
     return {
-      collection: null
+      collection: null,
+      corsWarning: false
     };
   },
   computed: {
+    type() {
+      return this.collection.isApi ? "API" : "Collection";
+    },
     showBrowser() {
       return isPlainObject(this.collection) && !this.collection.isPrivate;
     }
@@ -54,9 +63,20 @@ export default {
       else {
         this.collection = response.data;
         if (this.showBrowser) {
-          await this.$nextTick();
           let createBrowser = require('stac-browser/src/main').default;
-          let browser = await createBrowser(this.collection.url, this.$router.path);;
+          let url = this.collection.url;
+          try {
+            let response = await this.$axios.get(url, {
+              timeout: 1000,
+              maxContentLength: 0
+            });
+          } catch (error) {
+            if(error.message == 'Network Error' || error.name == 'NetworkError') {
+              url = this.$axios.defaults.baseURL + '/proxy?' + encodeURIComponent(url);
+              this.corsWarning = true;
+            }
+          }
+          let browser = await createBrowser(url, this.$router.path);
         }
         else {
           document.title = this.collection.title + " - STAC Index";
@@ -69,3 +89,9 @@ export default {
   }
 }
 </script>
+
+<style>
+#stac-browser {
+  margin: 0 -15px;
+}
+</style>

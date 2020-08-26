@@ -12,7 +12,10 @@
         <h5>{{ formTitle }}</h5>
         <b-form-group v-if="fields.includes('url')" label="URL:" label-for="url">
           <b-form-input id="url" type="url" v-model="url" required></b-form-input>
-          <b-form-text>This URL must be publicly accessible.</b-form-text>
+          <b-form-text v-if="type !== 'ecosystem'">
+            This URL must be publicly accessible or you must select "private" below.
+            It must be the URL of the root catalog / API landing page.
+          </b-form-text>
         </b-form-group>
         <b-form-group v-if="fields.includes('title')" :label="type === 'ecosystem' ? 'Name of the software or tool:' : 'Title:'" label-for="title">
           <b-form-input id="title" type="text" v-model="title" required minlength="3" maxlength="50"></b-form-input>

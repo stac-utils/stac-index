@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
+import NotFound from '../views/NotFound.vue'
 
 Vue.use(VueRouter)
 
@@ -34,7 +35,7 @@ const routes = [
     props: route => ({ access: toBoolean(route.query.access) })
   },
   {
-    path: '/browse/:id',
+    path: '/collections/:id',
     name: 'Browse',
     component: () => import(/* webpackChunkName: "browse" */ '../views/Browse.vue'),
     props: route => ({ id: route.params.id })
@@ -59,10 +60,15 @@ const routes = [
     path: '/privacy',
     name: 'Privacy Policy',
     component: () => import(/* webpackChunkName: "privacy" */ '../views/Privacy.vue')
+  },
+  {
+    path: '*',
+    component: NotFound
   }
 ]
 
 const router = new VueRouter({
+  mode: 'history',
   routes
 })
 

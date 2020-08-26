@@ -2,8 +2,8 @@
   <b-container class="content collections">
     <h1>STAC Collections</h1>
     <p>A list of STAC Collections. This is WIP and currently only shows a list of the static catalogs!</p>
-    <b-spinner v-if="collections === null" label="Loading..."></b-spinner>
-    <b-alert v-else-if="typeof collections === 'string'" variant="danger" show>{{ collections }}</b-alert>
+    <b-spinner v-if="data === null" label="Loading..."></b-spinner>
+    <b-alert v-else-if="typeof data === 'string'" variant="danger" show>{{ data }}</b-alert>
     <template v-else>
       <h6>Filter by Access Level</h6>
       <b-nav pills small>
@@ -14,19 +14,19 @@
       <hr />
       <b-alert v-if="filtered.length === 0" show>No Collections found.</b-alert>
       <b-list-group v-else>
-        <b-list-group-item v-for="(col,i) in filtered" :key="i" :to="col.isPrivate ? false : '/browse/' + col._id" class="flex-column align-items-start">
+        <b-list-group-item v-for="(col,i) in filtered" :key="i" class="flex-column align-items-start">
           <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1">{{ col.title }}</h5>
+            <h5 class="mb-1"><b-link :to="'/collections/' + col._id">{{ col.title }}</b-link></h5>
             <small>
-              <b-badge v-if="col.isPrivate" variant="dark" :id="'col_access_' + i">Private</b-badge>
+              <b-badge v-if="col.isPrivate" variant="dark" :id="'access_' + i">Private</b-badge>
               <b-badge v-else variant="success">Public</b-badge>
-              <b-tooltip :target="'col_access_' + i" triggers="hover">
+              <b-tooltip v-if="col.isPrivate" :target="'access_' + i" triggers="hover">
                 <Description :description="col.access" />
               </b-tooltip>
             </small>
           </div>
           <Description :description="col.summary" />
-          <small><code>{{ col.url }}</code></small>
+          <small><code><b-link :href="col.url" target="_blank">{{ col.url }}</b-link></code></small>
         </b-list-group-item>
       </b-list-group>
     </template>
@@ -49,16 +49,16 @@ export default {
   },
   data() {
     return {
-      collections: null
+      data: null
     };
   },
   computed: {
     filtered() {
-      if (!Array.isArray(this.collections)) {
+      if (!Array.isArray(this.data)) {
         return [];
       }
 
-      return this.collections.filter(col => {
+      return this.data.filter(col => {
         if (this.access === true && col.isPrivate) {
           return false;
         }
@@ -73,13 +73,10 @@ export default {
   async created() {
     try {
       let response = await this.$axios.get('/collections');
-      this.collections = response.data;
+      this.data = response.data;
     } catch (error) {
-      this.collections = "Can't load list of Collections from server. Please try again.";
+      this.data = "Can't load list of Collections from the server: " + error.message;
     }
   }
 }
 </script>
-
-<style scoped>
-</style>

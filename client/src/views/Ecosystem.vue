@@ -18,9 +18,9 @@
       <hr />
       <b-alert v-if="filtered.length === 0" show>No tool or software found.</b-alert>
       <b-list-group v-else>
-        <b-list-group-item v-for="(eco,i) in filtered" :key="i" :href="eco.url" target="_blank" class="flex-column align-items-start">
+        <b-list-group-item v-for="(eco,i) in filtered" :key="i" class="flex-column align-items-start">
           <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1">{{ eco.title }}</h5>
+            <h5 class="mb-1"><b-link :href="eco.url" target="_blank">{{ eco.title }}</b-link></h5>
             <small><b-badge v-if="eco.language">{{ eco.language }}</b-badge></small>
           </div>
           <p class="mb-1">{{ eco.summary }}</p>

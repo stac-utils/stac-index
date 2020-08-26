@@ -14,7 +14,7 @@
       <b-alert v-if="corsWarning" variant="warning" show>
         This {{ type }} doesn't support <a href="https://developer.mozilla.org/de/docs/Web/HTTP/CORS" target="_blank">CORS</a>.
         STAC Index tries to proxy the request, but links, images or other references might be broken while browing through the {{ type }}.
-        The URLs shown below will include the STAC Index proxy (<code>http://localhost:9999/proxy?</code>) and should not be used as provided in the browser.
+        The URLs shown below will include the STAC Index proxy (<code>{{ proxyUrl }}</code>) and should not be used as provided in the browser.
         Use the offical link to the {{ type }} instead:<br /><a :href="collection.url" target="_blank"><code>{{ collection.url }}</code></a>
       </b-alert>
       <div id="stac-browser"></div>
@@ -51,6 +51,9 @@ export default {
     },
     showBrowser() {
       return isPlainObject(this.collection) && !this.collection.isPrivate;
+    },
+    proxyUrl() {
+      return this.$axios.defaults.baseURL + '/proxy?';
     }
   },
   async mounted() {
@@ -72,7 +75,7 @@ export default {
             });
           } catch (error) {
             if(error.message == 'Network Error' || error.name == 'NetworkError') {
-              url = this.$axios.defaults.baseURL + '/proxy?' + encodeURIComponent(url);
+              url = this.proxyUrl + encodeURIComponent(url);
               this.corsWarning = true;
             }
           }

@@ -19,7 +19,6 @@ function toBoolean(str) {
 const routes = [
   {
     path: '/',
-    name: 'Home',
     component: Home
   },
   {
@@ -70,6 +69,16 @@ const routes = [
 const router = new VueRouter({
   mode: 'history',
   routes
+})
+
+router.beforeEach((to, from, next) => {
+  if (to.name) {
+    document.title = to.name + " - STAC Index"
+  }
+  else {
+    document.title = "STAC Index"
+  }
+  next()
 })
 
 export default router

@@ -30,7 +30,7 @@ export default {
     id: {
       type: String,
       validator: function (value) {
-        return Boolean(value.match(/^\w+$/i));
+        return Boolean(value.match(/^[a-z0-9-]+$/i));
       }
     }
   },
@@ -40,9 +40,6 @@ export default {
     };
   },
   computed: {
-    url() {
-      return '/browse?' + this.id;
-    },
     showBrowser() {
       return isPlainObject(this.collection) && !this.collection.isPrivate;
     }
@@ -60,6 +57,9 @@ export default {
           await this.$nextTick();
           let createBrowser = require('stac-browser/src/main').default;
           let browser = await createBrowser(this.collection.url, this.$router.path);;
+        }
+        else {
+          document.title = this.collection.title + " - STAC Index";
         }
       }
     } catch (error) {

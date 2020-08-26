@@ -82,7 +82,7 @@ module.exports = class Data {
 
 	async getApis(recent = null) {
 		return new Promise((resolve, reject) => {
-			this.catalogs.find({isApi: false}).sort({ title: 1 }).exec(function (err, data) {
+			this.catalogs.find({ isApi: true }).sort({ title: 1 }).exec(function (err, data) {
 				if (err) {
 					reject(err);
 				}
@@ -95,7 +95,7 @@ module.exports = class Data {
 
 	async getCollections() {
 		return new Promise((resolve, reject) => {
-			this.catalogs.find({isApi: false}).sort({ title: 1 }).exec(function (err, data) {
+			this.catalogs.find({ isApi: false }).sort({ title: 1 }).exec(function (err, data) {
 				if (err) {
 					reject(err);
 				}
@@ -121,7 +121,7 @@ module.exports = class Data {
 
 	async getCollection(slug) {
 		return new Promise((resolve, reject) => {
-			this.catalogs.findOne({slug: slug}, function (err, data) {
+			this.catalogs.findOne({slug}, function (err, data) {
 				if (err) {
 					reject(err);
 				}
@@ -190,7 +190,7 @@ module.exports = class Data {
 
 	async checkDuplicates(db, url) {
 		return new Promise((resolve, reject) => {
-			db.findOne({url: url}, function (err, data) {
+			db.findOne({url}, function (err, data) {
 				if (err) {
 					reject(err);
 				}

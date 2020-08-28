@@ -250,9 +250,9 @@ class Server extends Config {
 		let baseUrl = 'https://' + this.hostname;
 		let urls = [
 			['/', 1.0, 'hourly'],
-			['/contact', 0, 'monhtly'],
-			['/privacy', 0, 'monhtly'],
-			['/add', 0, 'monhtly'],
+			['/contact', 0, 'monthly'],
+			['/privacy', 0, 'monthly'],
+			['/add', 0, 'monthly'],
 			['/apis', 0.5, 'daily'],
 			['/collections',0.5, 'daily'],
 			['/ecosystem', 0.5, 'daily']

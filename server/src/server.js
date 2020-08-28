@@ -155,6 +155,7 @@ class Server extends Config {
 		server.get('/collections/*', this.collectionById.bind(this));
 		server.get('/newest', this.newest.bind(this));
 		server.get('/proxy', this.proxy.bind(this));
+		server.get('/sitemap.xml', this.sitemap.bind(this));
 	}
 
 	root(req, res, next) {
@@ -225,7 +226,7 @@ class Server extends Config {
 	}
 
 	async collections(req, res, next) {
-		res.send(await this.data.getCollections());
+		res.send(await this.data.getCatalogs()); // ToDo
 		return next();
 	}
 
@@ -242,6 +243,29 @@ class Server extends Config {
 
 	categories(req, res, next) {
 		res.send(this.data.getCategories());
+		return next();
+	}
+
+	async sitemap(req, res, next) {
+		let baseUrl = 'https://' + this.hostname;
+		let urls = [
+			['/', 1.0, 'hourly'],
+			['/contact', 0, 'monhtly'],
+			['/privacy', 0, 'monhtly'],
+			['/add', 0, 'monhtly'],
+			['/apis', 0.5, 'daily'],
+			['/collections',0.5, 'daily'],
+			['/ecosystem', 0.5, 'daily']
+		];
+
+		let collections = await this.data.getCollections();
+		collections.forEach(c => urls.push([`/collections/${c.slug}`, 1.0, 'weekly']));
+
+		let xml = urls
+			.map(r => `\t<url><loc>${baseUrl}${r[0]}</loc><priority>${r[1]}</priority><changefreq>${r[2]}</changefreq></url>`)
+			.join("\n");
+		res.header('content-type', 'application/xml');
+		res.sendRaw(`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">\n${xml}\n</urlset>`);
 		return next();
 	}
 

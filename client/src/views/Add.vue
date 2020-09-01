@@ -26,8 +26,8 @@
           <b-form-text>Short identifier for the URL. Min. 3 chars, max. 50 chars. Allowed chars: <code>a-z</code>, <code>0-9</code>, <code>-</code></b-form-text>
         </b-form-group>
         <b-form-group v-if="fields.includes('summary')" label="Summary:" label-for="summary">
-          <b-form-textarea id="summary" v-model="summary" rows="3" required minlength="50" maxlength="500"></b-form-textarea>
-          <b-form-text>Short summary about the {{ formTitle }}. CommonMark (Markdown) is supported. Min. 50 chars, max. 500 chars.</b-form-text>
+          <b-form-textarea id="summary" v-model="summary" rows="3" required minlength="50" maxlength="300"></b-form-textarea>
+          <b-form-text>Short summary about the {{ formTitle }}. Min. 50 chars, max. 300 chars. One CommonMark (Markdown) style link allowed.</b-form-text>
         </b-form-group>
         <b-form-group v-if="fields.includes('categories')" label="Categories:" label-for="categories">
           <multiselect v-model="categories" :options="categoryList" :multiple="true" :taggable="true"></multiselect>

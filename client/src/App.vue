@@ -87,20 +87,23 @@
   color: black;
 }
 
-.tooltip a {
-  color: #09B3AD;
-}
-.tooltip a:hover {
-  color: white;
-  text-decoration: underline;
-}
-
 #app .badge {
   margin: 1px;
 }
 #app h6 {
   margin-top: 1em;
 }
+
+#app .styled-description h1 {
+  font-size: 1.2em;
+}
+#app .styled-description h2 {
+  font-size: 1.1em;
+}
+#app .styled-description h3, #app .styled-description h4, #app .styled-description h5, #app .styled-description h6 {
+  font-size: 1em;
+}
+#app .styled-description 
 #app .styled-description p {
   line-height: 1.5em;
   margin-bottom: 0.5em;

@@ -6,20 +6,20 @@
         <b-badge v-if="mixed && data.isApi" variant="secondary">API</b-badge>
         <b-badge v-else-if="mixed" variant="secondary" title="Static Catalog">Catalog</b-badge>
         
-        <b-badge v-if="data.isPrivate" variant="dark" :id="'access_' + data._id">Private</b-badge>
+        <b-badge v-if="data.isPrivate" variant="dark">Private</b-badge>
         <b-badge v-else variant="success">Public</b-badge>
-        <b-tooltip v-if="data.isPrivate" :target="'access_' + data._id" triggers="hover">
-          <Description :description="data.access" />
-        </b-tooltip>
       </small>
     </div>
-    <Description :description="data.summary" />
+    <div class="styled-description summary">
+      <p v-html="parseLink(data.summary)"></p>
+    </div>
     <small><code><b-link :href="data.url" target="_blank">{{ data.url }}</b-link></code></small>
   </b-list-group-item>
 </template>
 
 <script>
 import { Description } from '@openeo/vue-components';
+import Utils from '../utils';
 
 export default {
   name: 'DataItem',
@@ -33,6 +33,11 @@ export default {
     mixed: {
       type: Boolean,
       default: false
+    }
+  },
+  methods: {
+    parseLink(text) {
+      return Utils.parseLink(text);
     }
   }
 };

@@ -2,6 +2,7 @@ const LANGUAGES = require('list-of-programming-languages');
 const Datastore = require('nedb');
 const axios = require('axios');
 const Utils = require('lodash');
+const Levenshtein = require('levenshtein');
 
 const emailRegExp = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 
@@ -183,7 +184,7 @@ module.exports = class Data {
 		title = this.checkTitle(title);
 		summary = this.checkSummary(summary);
 		email = this.checkEmail(email);
-		this.checkDuplicates(this.catalogs, url);
+		await this.checkDuplicates(this.catalogs, url, title);
 		if (await this.getCollection(slug)) {
 			throw new Error("Another catalog with the given slug exists. Please choose a different slug.");
 		}
@@ -201,14 +202,28 @@ module.exports = class Data {
 		});
 	}
 
-	async checkDuplicates(db, url) {
+	async checkDuplicates(db, url, title) {
 		return new Promise((resolve, reject) => {
-			db.findOne({url}, function (err, data) {
+			db.find({}, function (err, data) {
 				if (err) {
-					reject(err);
+					return reject(err);
 				}
-				else if (data) {
-					reject(new Error("The given URL already exists."));
+				let similar = data.find(col => {
+					if (url.startsWith(col.url)) {
+						return true;
+					}
+					let urlDist = new Levenshtein(col.url, url);
+					if(urlDist.distance < 2) {
+						return true;
+					}
+					let titleDist = new Levenshtein(col.title, title);
+					if(titleDist.distance < 4) {
+						return true;
+					}
+					return false;
+				});
+				if (similar) {
+					reject(new Error("The given API or Catalogs has already been submitted or the title or URL is very similar to another one."));
 				}
 				else {
 					resolve();
@@ -277,8 +292,8 @@ module.exports = class Data {
 		else if (access.length < 100) {
 			throw new Error('Access information must be at least 100 characters');
 		}
-		else if (access.length > 1000) {
-			throw new Error('Access information must be no longer than 1000 characters');
+		else if (access.length > 500) {
+			throw new Error('Access information must be no longer than 500 characters');
 		}
 		return access;
 	}
@@ -291,7 +306,7 @@ module.exports = class Data {
 			throw new Error('Summary must be at least 50 characters');
 		}
 		else if (summary.length > 500) {
-			throw new Error('Summary must be no longer than 500 characters');
+			throw new Error('Summary must be no longer than 300 characters');
 		}
 		return summary;
 	}

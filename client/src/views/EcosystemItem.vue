@@ -4,7 +4,9 @@
       <h5 class="mb-1"><b-link :href="data.url" target="_blank">{{ data.title }}</b-link></h5>
       <small><b-badge v-if="data.language">{{ data.language }}</b-badge></small>
     </div>
-    <Description :description="data.summary" />
+    <div class="styled-description summary">
+      <p v-html="parseLink(data.summary)"></p>
+    </div>
     <small>
       Categories:
       <b-badge v-for="cat in data.categories" :key="cat">{{ cat }}</b-badge>
@@ -14,6 +16,7 @@
 
 <script>
 import { Description } from '@openeo/vue-components';
+import Utils from '../utils';
 
 export default {
   name: 'EcosystemItem',
@@ -23,6 +26,11 @@ export default {
   props: {
     data: {
       type: Object
+    }
+  },
+  methods: {
+    parseLink(text) {
+      return Utils.parseLink(text);
     }
   }
 };

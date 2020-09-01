@@ -292,8 +292,8 @@ module.exports = class Data {
 		else if (access.length < 100) {
 			throw new Error('Access information must be at least 100 characters');
 		}
-		else if (access.length > 500) {
-			throw new Error('Access information must be no longer than 500 characters');
+		else if (access.length > 1000) {
+			throw new Error('Access information must be no longer than 1000 characters');
 		}
 		return access;
 	}
@@ -305,7 +305,7 @@ module.exports = class Data {
 		else if (summary.length < 50) {
 			throw new Error('Summary must be at least 50 characters');
 		}
-		else if (summary.length > 500) {
+		else if (summary.length > 300) {
 			throw new Error('Summary must be no longer than 300 characters');
 		}
 		return summary;

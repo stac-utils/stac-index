@@ -150,9 +150,10 @@ class Server extends Config {
 		server.get('/ecosystem', this.ecosystem.bind(this));
 		server.get('/categories', this.categories.bind(this));
 		server.get('/languages', this.languages.bind(this));
-		server.get('/apis', this.apis.bind(this));
+		server.get('/catalogs', this.catalogs.bind(this));
+		server.get('/catalogs/:slug', this.catalogById.bind(this));
 		server.get('/collections', this.collections.bind(this));
-		server.get('/collections/*', this.collectionById.bind(this));
+		server.get('/collections/:id', this.collectionById.bind(this));
 		server.get('/newest', this.newest.bind(this));
 		server.get('/proxy', this.proxy.bind(this));
 		server.get('/sitemap.xml', this.sitemap.bind(this));
@@ -220,19 +221,25 @@ class Server extends Config {
 		return next();
 	}
 
-	async apis(req, res, next) {
-		res.send(await this.data.getApis());
+	async catalogs(req, res, next) {
+		res.send(await this.data.getCatalogs());
+		return next();
+	}
+
+	async catalogById(req, res, next) {
+		var slug = req.params['slug'];
+		res.send(await this.data.getCatalog(slug));
 		return next();
 	}
 
 	async collections(req, res, next) {
-		res.send(await this.data.getCatalogs()); // ToDo
+		res.send(await this.data.getCollections());
 		return next();
 	}
 
 	async collectionById(req, res, next) {
-		var slug = req.params['*'];
-		res.send(await this.data.getCollection(slug));
+		var id = req.params['id'];
+		res.send(await this.data.getCollection(slug, id));
 		return next();
 	}
 
@@ -253,13 +260,15 @@ class Server extends Config {
 			['/contact', 0, 'monthly'],
 			['/privacy', 0, 'monthly'],
 			['/add', 0, 'monthly'],
-			['/apis', 0.5, 'daily'],
+			['/catalogs',0.5, 'daily'],
 			['/collections',0.5, 'daily'],
 			['/ecosystem', 0.5, 'daily']
 		];
 
+		let catalogs = await this.data.getCatalogs();
+		catalogs.forEach(c => urls.push([`/catalogs/${c.slug}`, 1.0, 'weekly']));
 		let collections = await this.data.getCollections();
-		collections.forEach(c => urls.push([`/collections/${c.slug}`, 1.0, 'weekly']));
+		collections.forEach(c => urls.push([`/collections/${c.slug}/${c.id}`, 1.0, 'weekly']));
 
 		let xml = urls
 			.map(r => `\t<url><loc>${baseUrl}${r[0]}</loc><priority>${r[1]}</priority><changefreq>${r[2]}</changefreq></url>`)

@@ -1,13 +1,13 @@
 <template>
   <b-container class="browse content">
-    <b-spinner v-if="collection === null" label="Loading..."></b-spinner>
-    <b-alert v-else-if="typeof collection === 'string'" variant="danger" show>{{ collection }}</b-alert>
+    <b-spinner v-if="data === null" label="Loading..."></b-spinner>
+    <b-alert v-else-if="typeof data === 'string'" variant="danger" show>{{ data }}</b-alert>
     <template v-else-if="!showBrowser">
-      <h1>{{ collection.title }}</h1>
-      <p><a :href="collection.url" target="_blank"><code>{{ collection.url }}</code></a></p>
+      <h1>{{ data.title }}</h1>
+      <p><a :href="data.url" target="_blank"><code>{{ data.url }}</code></a></p>
       <b-alert variant="info" show>
         <p><strong>This {{ type }} is private!</strong></p>
-        <Description :description="collection.access" />
+        <Description :description="data.access" />
       </b-alert>
     </template>
     <template v-else>
@@ -20,7 +20,7 @@
         </template>
         STAC Index tries to proxy the request, but links, images or other references might be broken while browing through the {{ type }}.
         The URLs shown below will include the STAC Index proxy (<code>{{ proxyUrl }}</code>) and should not be used as provided in the browser.
-        Use the offical link to the {{ type }} instead:<br /><a :href="collection.url" target="_blank"><code>{{ collection.url }}</code></a>
+        Use the offical link to the {{ type }} instead:<br /><a :href="data.url" target="_blank"><code>{{ data.url }}</code></a>
       </b-alert>
       <div id="stac-browser"></div>
     </template>
@@ -42,21 +42,33 @@ export default {
       validator: function (value) {
         return Boolean(value.match(/^[a-z0-9-]+$/i));
       }
+    },
+    collection: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
     return {
-      collection: null,
+      data: null,
       corsWarning: false,
       isHttp: false
     };
   },
   computed: {
     type() {
-      return this.collection.isApi ? "API" : "Collection";
+      if (this.collection) {
+        return "Collection"
+      }
+      else if (this.data.isApi) {
+        return "API";
+      }
+      else {
+        return "Catalog";
+      }
     },
     showBrowser() {
-      return isPlainObject(this.collection) && !this.collection.isPrivate;
+      return isPlainObject(this.data) && !this.data.isPrivate;
     },
     proxyUrl() {
       return this.$axios.defaults.baseURL + '/proxy?';
@@ -64,16 +76,17 @@ export default {
   },
   async mounted() {
     try {
-      let response = await this.$axios.get('/collections/' + this.id);
+      let endpoint = (this.data ? '/collections/' : '/catalogs/') + this.id
+      let response = await this.$axios.get(endpoint);
       if (!isPlainObject(response.data)) {
-        this.collection = "Information retrieved from the server are invalid.";
+        this.data = "Information retrieved from the server are invalid.";
         return;
       }
       else {
-        this.collection = response.data;
+        this.data = response.data;
         if (this.showBrowser) {
           let createBrowser = require('stac-browser/src/main').default;
-          let url = this.collection.url;
+          let url = this.data.url;
           if (url.startsWith('http://')) {
             url = this.makeProxyUrl(url);
             this.isHttp = true;
@@ -92,11 +105,11 @@ export default {
           let browser = await createBrowser(url, this.$router.path);
         }
         else {
-          document.title = this.collection.title + " - STAC Index";
+          document.title = this.data.title + " - STAC Index";
         }
       }
     } catch (error) {
-      this.collection = "Can't load information from the server: " + error.message;
+      this.data = "Can't load information from the server: " + error.message;
       return;
     }
   },

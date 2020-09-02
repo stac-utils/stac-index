@@ -11,6 +11,7 @@ module.exports = class Data {
 	constructor(storagePath) {
 		this.ecosystem = this.load('ecosystem', storagePath);
 		this.catalogs = this.load('catalogs', storagePath);
+		this.collections = this.load('collections', storagePath);
 		this.categories = [
 			'API',
 			'CLI',
@@ -83,20 +84,7 @@ module.exports = class Data {
 
 	async getCollections() {
 		return new Promise((resolve, reject) => {
-			this.catalogs.find({}).exec(function (err, data) {
-				if (err) {
-					reject(err);
-				}
-				else {
-					resolve(data);
-				}
-			});
-		});
-	}
-
-	async getApis() {
-		return new Promise((resolve, reject) => {
-			this.catalogs.find({ isApi: true }).sort({ title: 1 }).exec(function (err, data) {
+			this.collections.find({}).exec(function (err, data) {
 				if (err) {
 					reject(err);
 				}
@@ -109,7 +97,7 @@ module.exports = class Data {
 
 	async getCatalogs() {
 		return new Promise((resolve, reject) => {
-			this.catalogs.find({ isApi: false }).sort({ title: 1 }).exec(function (err, data) {
+			this.catalogs.find({}).sort({ title: 1 }).exec(function (err, data) {
 				if (err) {
 					reject(err);
 				}
@@ -133,7 +121,20 @@ module.exports = class Data {
 		});
 	}
 
-	async getCollection(slug) {
+	async getCollection(id) {
+		return new Promise((resolve, reject) => {
+			this.collections.findOne({id}, function (err, data) {
+				if (err) {
+					reject(err);
+				}
+				else {
+					resolve(data);
+				}
+			});
+		});
+	}
+
+	async getCatalog(slug) {
 		return new Promise((resolve, reject) => {
 			this.catalogs.findOne({slug}, function (err, data) {
 				if (err) {

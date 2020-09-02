@@ -1,10 +1,10 @@
 <template>
   <b-list-group-item class="flex-column align-items-start">
     <div class="d-flex w-100 justify-content-between">
-      <h5 class="mb-1"><b-link :to="'/collections/' + data.slug">{{ data.title }}</b-link></h5>
+      <h5 class="mb-1"><b-link :to="'/catalogs/' + data.slug">{{ data.title }}</b-link></h5>
       <small class="header-badges">
-        <b-badge v-if="mixed && data.isApi" variant="secondary">API</b-badge>
-        <b-badge v-else-if="mixed" variant="secondary" title="Static Catalog">Catalog</b-badge>
+        <b-badge v-if="data.isApi" variant="secondary">API</b-badge>
+        <b-badge v-else variant="secondary" title="Static Catalog">Catalog</b-badge>
         
         <b-badge v-if="data.isPrivate" variant="dark">Private</b-badge>
         <b-badge v-else variant="success">Public</b-badge>
@@ -29,10 +29,6 @@ export default {
   props: {
     data: {
       type: Object
-    },
-    mixed: {
-      type: Boolean,
-      default: false
     }
   },
   methods: {

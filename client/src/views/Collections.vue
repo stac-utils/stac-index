@@ -1,20 +1,18 @@
 <template>
   <b-container class="content collections">
-    <h1>STAC Collections</h1>
-    <p>A list of STAC Collections. This is WIP and currently only shows a list of the static catalogs!</p>
+    <h1>Collection Search</h1>
+    <p>A searchable list of all STAC Collections.</p>
     <b-spinner v-if="data === null" label="Loading..."></b-spinner>
     <b-alert v-else-if="typeof data === 'string'" variant="danger" show>{{ data }}</b-alert>
     <template v-else>
-      <h6>Filter by Access Level</h6>
-      <b-nav pills small>
-        <b-nav-item :active="access === null" to="/collections">All</b-nav-item>
-        <b-nav-item :active="access === true" to="/collections?access=true">Public Only</b-nav-item>
-        <b-nav-item :active="access === false" to="/collections?access=false">Private Only</b-nav-item>
-      </b-nav>
-      <hr />
-      <b-alert v-if="filtered.length === 0" show>No Collections found.</b-alert>
+      <b-alert v-if="filtered.length === 0" show>
+        No Collections found.
+        This functionality has not been implemented yet.
+        The idea is to crawl all STAC catalogs and APIs so that you can search on all of them here using the Collection Summaries.
+        Stay tuned!
+      </b-alert>
       <b-list-group v-else>
-        <DataItem v-for="data in filtered" :key="data._id" :data="data" />
+        <DataItem v-for="item in data" :key="item._id" :data="item" />
       </b-list-group>
     </template>
   </b-container>
@@ -29,10 +27,6 @@ export default {
     DataItem
   },
   props: {
-    access: {
-      type: Boolean,
-      default: null
-    }
   },
   data() {
     return {
@@ -46,13 +40,7 @@ export default {
       }
 
       return this.data.filter(col => {
-        if (this.access === true && col.isPrivate) {
-          return false;
-        }
-        else if (this.access === false && !col.isPrivate) {
-          return false;
-        }
-
+        // ToDo: Implement filter
         return true;
       });
     }

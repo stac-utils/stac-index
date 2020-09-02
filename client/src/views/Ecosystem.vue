@@ -7,12 +7,12 @@
     <template v-else>
       <h6>Filter by Category</h6>
       <b-nav pills small>
-        <b-nav-item :active="!category" :to="'/ecosystem?category=&language='+encodeURIComponent(language)">All</b-nav-item>
+        <b-nav-item :active="!category" :to="'/ecosystem?language='+encodeURIComponent(language)">All</b-nav-item>
         <b-nav-item v-for="cat in categories" :key="cat" :active="category === cat" :to="'/ecosystem?category='+cat+'&language='+encodeURIComponent(language)">{{ cat }}</b-nav-item>
       </b-nav>
       <h6>Filter by Programming Language</h6>
       <b-nav pills small>
-        <b-nav-item :active="!language" :to="'/ecosystem?category='+encodeURIComponent(category)+'&language='">All</b-nav-item>
+        <b-nav-item :active="!language" :to="'/ecosystem?category='+encodeURIComponent(category)">All</b-nav-item>
         <b-nav-item v-for="lang in languages" :key="lang" :active="language === lang" :to="'/ecosystem?category='+encodeURIComponent(category)+'&language='+encodeURIComponent(lang)">{{ lang }}</b-nav-item>
       </b-nav>
       <hr />

@@ -22,22 +22,31 @@ const routes = [
     component: Home
   },
   {
-    path: '/collections',
-    name: 'Collections',
-    component: () => import(/* webpackChunkName: "collections" */ '../views/Collections.vue'),
-    props: route => ({ access: toBoolean(route.query.access) })
+    path: '/catalogs',
+    name: 'Catalogs',
+    component: () => import(/* webpackChunkName: "catalogs" */ '../views/Catalogs.vue'),
+    props: route => ({ access: toBoolean(route.query.access), type: route.query.type })
   },
   {
-    path: '/apis',
-    name: 'APIs',
-    component: () => import(/* webpackChunkName: "apis" */ '../views/APIs.vue'),
-    props: route => ({ access: toBoolean(route.query.access) })
+    path: '/catalogs/:id',
+    name: 'BrowseCatalog',
+    component: () => import(/* webpackChunkName: "browse" */ '../views/Browse.vue'),
+    props: route => ({ id: route.params.id, collection: false })
+  },
+  {
+    path: '/collections',
+    name: 'Collections',
+    component: () => import(/* webpackChunkName: "collections" */ '../views/Collections.vue')
   },
   {
     path: '/collections/:id',
-    name: 'Browse',
+    redirect: { name: 'BrowseCatalog' }
+  },
+  {
+    path: '/collections/:slug/:id',
+    name: 'BrowseCollection',
     component: () => import(/* webpackChunkName: "browse" */ '../views/Browse.vue'),
-    props: route => ({ id: route.params.id })
+    props: route => ({ id: route.params.id, collection: true })
   },
   {
     path: '/ecosystem',

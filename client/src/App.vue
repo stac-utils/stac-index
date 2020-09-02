@@ -11,8 +11,8 @@
 
         <b-collapse id="nav-collapse" is-nav>
           <b-navbar-nav>
-            <b-nav-item to="/collections">Collections</b-nav-item>
-            <b-nav-item to="/apis">APIs</b-nav-item>
+            <b-nav-item to="/catalogs">Catalogs</b-nav-item>
+            <b-nav-item to="/collections">Collection Search</b-nav-item>
             <b-nav-item to="/ecosystem">Ecosystem</b-nav-item>
             <b-nav-item to="/add" title="Add new Catalog or Tool"><b-icon icon="plus-circle-fill" /></b-nav-item>
           </b-navbar-nav>

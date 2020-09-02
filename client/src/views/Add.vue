@@ -13,6 +13,7 @@
         <b-form-group v-if="fields.includes('url')" label="URL:" label-for="url">
           <b-form-input id="url" type="url" v-model="url" required></b-form-input>
           <b-form-text v-if="type !== 'ecosystem'">
+            HTTPS should be used instead of HTTP whenever available.
             This URL must be publicly accessible or you must select "private" below.
             It must be the URL of the root catalog / API landing page.
           </b-form-text>
@@ -73,6 +74,7 @@ export default {
       confirmation: null,
       type: null,
       url: null,
+      slug: '',
       title: null,
       summary: null,
       language: null,

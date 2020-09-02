@@ -260,13 +260,13 @@ class Server extends Config {
 			['/contact', 0, 'monthly'],
 			['/privacy', 0, 'monthly'],
 			['/add', 0, 'monthly'],
-			['/catalogs',0.5, 'daily'],
-			['/collections',0.5, 'daily'],
+			['/catalogs', 0.5, 'daily'],
+			['/collections', 0.5, 'daily'],
 			['/ecosystem', 0.5, 'daily']
 		];
 
 		let catalogs = await this.data.getCatalogs();
-		catalogs.forEach(c => urls.push([`/catalogs/${c.slug}`, 1.0, 'weekly']));
+		catalogs.forEach(c => urls.push([`/catalogs/${c.slug}`, 0.8, 'weekly']));
 		let collections = await this.data.getCollections();
 		collections.forEach(c => urls.push([`/collections/${c.slug}/${c.id}`, 1.0, 'weekly']));
 

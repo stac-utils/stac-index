@@ -26,7 +26,6 @@ export default class Utils {
     static parseLink(text) {
         let matches = text.match(/^(.*)\[([^\]]+)\]\((https?:\/\/[^\)<>]+)\)(.*)$/);
         if (matches) {
-            console.log(matches);
             return Utils.escape(matches[1]) + '<a href="' + Utils.escape(matches[3]) + '" target="_blank">' + Utils.escape(matches[2]) + '</a>' + Utils.escape(matches[4]);
         }
         else {

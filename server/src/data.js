@@ -58,7 +58,7 @@ module.exports = class Data {
 
 	async getEcosystem() {
 		return new Promise((resolve, reject) => {
-			this.ecosystem.find({}).sort({ title: 1 }).exec(function (err, data) {
+			this.ecosystem.find({}, { email: 0 }).sort({ title: 1 }).exec(function (err, data) {
 				if (err) {
 					reject(err);
 				}
@@ -71,7 +71,7 @@ module.exports = class Data {
 
 	async getNewestEcosystem(recent = 3) {
 		return new Promise((resolve, reject) => {
-			this.ecosystem.find({}).sort({ createdAt: -1 }).limit(recent).exec(function (err, data) {
+			this.ecosystem.find({}, { email: 0 }).sort({ createdAt: -1 }).limit(recent).exec(function (err, data) {
 				if (err) {
 					reject(err);
 				}
@@ -84,7 +84,7 @@ module.exports = class Data {
 
 	async getCollections() {
 		return new Promise((resolve, reject) => {
-			this.collections.find({}).exec(function (err, data) {
+			this.collections.find({}, { email: 0 }).exec(function (err, data) {
 				if (err) {
 					reject(err);
 				}
@@ -97,7 +97,7 @@ module.exports = class Data {
 
 	async getCatalogs() {
 		return new Promise((resolve, reject) => {
-			this.catalogs.find({}).sort({ title: 1 }).exec(function (err, data) {
+			this.catalogs.find({}, { email: 0 }).sort({ title: 1 }).exec(function (err, data) {
 				if (err) {
 					reject(err);
 				}
@@ -110,7 +110,7 @@ module.exports = class Data {
 
 	async getNewestData(recent = 3) {
 		return new Promise((resolve, reject) => {
-			this.catalogs.find({}).sort({ createdAt: -1 }).limit(recent).exec(function (err, data) {
+			this.catalogs.find({}, { email: 0 }).sort({ createdAt: -1 }).limit(recent).exec(function (err, data) {
 				if (err) {
 					reject(err);
 				}
@@ -123,7 +123,7 @@ module.exports = class Data {
 
 	async getCollection(id) {
 		return new Promise((resolve, reject) => {
-			this.collections.findOne({id}, function (err, data) {
+			this.collections.findOne({id}, { email: 0 }, function (err, data) {
 				if (err) {
 					reject(err);
 				}
@@ -136,7 +136,7 @@ module.exports = class Data {
 
 	async getCatalog(slug) {
 		return new Promise((resolve, reject) => {
-			this.catalogs.findOne({slug}, function (err, data) {
+			this.catalogs.findOne({slug}, { email: 0 }, function (err, data) {
 				if (err) {
 					reject(err);
 				}

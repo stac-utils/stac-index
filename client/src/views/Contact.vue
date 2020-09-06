@@ -6,8 +6,8 @@
     </p>
     <p>
       Matthias Mohr<br />
-      Alte Weide 1<br />
-      48161 Münster<br />
+      Grevener Str. 313<br />
+      48159 Münster<br />
       Germany
     </p>
     <p>

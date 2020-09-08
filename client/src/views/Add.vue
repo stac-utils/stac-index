@@ -2,7 +2,7 @@
   <b-container class="content add">
     <h1>Add new Catalog or Tool</h1>
     <b-alert v-if="typeof error === 'string'" variant="danger" show>{{ error }}</b-alert>
-    <b-alert v-else-if="typeof confirmation === 'string'" variant="success" show>{{ confirmation }}</b-alert>
+    <b-alert v-else-if="typeof confirmation === 'string'" :variant="urlHintType" show>{{ confirmation }}</b-alert>
     <b-form @submit="onSubmit">
       <h5>What do you want to add?</h5>
       <b-form-group>
@@ -17,6 +17,7 @@
             This URL must be publicly accessible or you must select "private" below.
             It must be the URL of the root catalog / API landing page.
           </b-form-text>
+          <b-alert v-if="urlHint" :variant="urlHintType" show>{{ urlHint }}</b-alert>
         </b-form-group>
         <b-form-group v-if="fields.includes('title')" :label="type === 'ecosystem' ? 'Name of the software or tool:' : 'Title:'" label-for="title">
           <b-form-input id="title" type="text" v-model="title" required minlength="3" maxlength="50"></b-form-input>
@@ -55,6 +56,7 @@
 <script>
 import Multiselect from 'vue-multiselect';
 import slugify from 'slugify';
+import isPlainObject from 'lodash/isPlainObject';
 
 export default {
   name: 'Add',
@@ -82,10 +84,48 @@ export default {
       accessPrivate: false,
       access: null,
       email: null,
-      customSlug: false
+      customSlug: false,
+      urlHint: "",
+      urlHintType: "info"
     };
   },
   watch: {
+    async url(newUrl) {
+      if ((this.type === 'catalog' || this.type === 'api') && typeof newUrl === 'string' && newUrl.startsWith('https://') && newUrl.length > 10) {
+        this.urlHint = "Trying to read the URL...";
+        this.urlHintType = "info";
+        let catalog;
+        try {
+          catalog = await this.$axios.get(newUrl);
+        } catch (error) {
+          try {
+            catalog = await this.$axios.get(this.proxyUrl + encodeURIComponent(newUrl));
+          } catch (error) {
+            this.accessPrivate = true;
+            this.urlHint = "Can't read the specified URL. Is the catalog private? Setting the API as 'private' for you...";
+            this.urlHintType = "warning";
+            return;
+          }
+        }
+
+        if (isPlainObject(catalog.data) && typeof catalog.data.id === 'string' && typeof catalog.data.description === 'string' && Array.isArray(catalog.data.links)) {
+          this.accessPrivate = false;
+          console.log(catalog.data);
+          if (typeof catalog.data.title === 'string' && !this.title) {
+            this.title = catalog.data.title;
+          }
+          if (typeof catalog.data.description === 'string' && !this.summary) {
+            this.summary = catalog.data.description;
+          }
+          this.urlHint = "Catalog found. Inserting some data from the catalog for you...";
+          this.urlHintType = "success";
+        }
+        else {
+          this.urlHint = "The link provided doesn't seem to be a valid catalog. Are you sure the URL is correct? Is the catalog private? Setting the API as 'private' for you...";
+          this.urlHintType = "danger";
+        }
+      }
+    },
     type(newVal) {
       if (newVal) {
         this.confirmation = null;
@@ -102,6 +142,9 @@ export default {
     }
   },
   computed: {
+    proxyUrl() {
+      return this.$axios.defaults.baseURL + '/proxy?';
+    },
     formTitle() {
       let type = this.typeList.find(t => t.value === this.type);
       if (type) {

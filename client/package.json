@@ -23,7 +23,7 @@
     "url": "git+https://github.com/stac-utils/stac-index.git"
   },
   "dependencies": {
-    "@openeo/vue-components": "^1.0.0-rc.2",
+    "@openeo/vue-components": "^1.0.0-rc.4",
     "axios": "^0.19.2",
     "bootstrap": "^4.5.2",
     "bootstrap-vue": "^2.16.0",

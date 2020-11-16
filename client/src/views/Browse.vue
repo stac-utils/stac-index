@@ -1,5 +1,5 @@
 <template>
-  <b-container class="browse content">
+  <b-container fluid class="browse content">
     <b-spinner v-if="data === null" label="Loading..."></b-spinner>
     <b-alert v-else-if="typeof data === 'string'" variant="danger" show>{{ data }}</b-alert>
     <template v-else-if="!showBrowser">

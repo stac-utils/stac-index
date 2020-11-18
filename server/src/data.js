@@ -203,7 +203,7 @@ module.exports = class Data {
 		});
 	}
 
-	async checkDuplicates(db, url, title) {
+	async checkDuplicates(db, url, title = null) {
 		return new Promise((resolve, reject) => {
 			db.find({}, function (err, data) {
 				if (err) {
@@ -217,9 +217,11 @@ module.exports = class Data {
 					if(urlDist.distance < 2) {
 						return true;
 					}
-					let titleDist = new Levenshtein(col.title, title);
-					if(titleDist.distance < 4) {
-						return true;
+					if (title) {
+						let titleDist = new Levenshtein(col.title, title);
+						if(titleDist.distance < 4) {
+							return true;
+						}
 					}
 					return false;
 				});

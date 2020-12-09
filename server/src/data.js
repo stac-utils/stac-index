@@ -3,6 +3,7 @@ const Datastore = require('nedb');
 const axios = require('axios');
 const Utils = require('lodash');
 const Levenshtein = require('levenshtein');
+const { EXTENSIONS, API_EXTENSIONS, CATEGORIES } = require('../../commons');
 
 const emailRegExp = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 
@@ -12,18 +13,6 @@ module.exports = class Data {
 		this.ecosystem = this.load('ecosystem', storagePath);
 		this.catalogs = this.load('catalogs', storagePath);
 		this.collections = this.load('collections', storagePath);
-		this.categories = [
-			'API',
-			'CLI',
-			'Client',
-			'Data Creation',
-			'Data Processing',
-			'Other',
-			'Server',
-			'Static',
-			'Validation',
-			'Visualization'
-		];
 		this.loadLanguages();
 	}
 
@@ -50,10 +39,6 @@ module.exports = class Data {
 
 	getLanguages() {
 		return this.languages;
-	}
-
-	getCategories() {
-		return this.categories;
 	}
 
 	async getEcosystem() {
@@ -147,17 +132,19 @@ module.exports = class Data {
 		});
 	}
 	
-	async addEcosystem(url, title, summary, categories = [], language = null, email = null) {
+	async addEcosystem(url, title, summary, categories = [], language = null, email = null, extensions = [], apiExtensions = []) {
 		url = await this.checkUrl(url);
 		title = this.checkTitle(title);
 		summary = this.checkSummary(summary);
 		categories = this.checkCategories(categories);
 		language = this.checkLanguage(language);
 		email = this.checkEmail(email);
+		extensions = this.checkExtensions(extensions);
+		apiExtensions = this.checkApiExtensions(apiExtensions);
 		this.checkDuplicates(this.ecosystem, url);
 		
 		return new Promise((resolve, reject) => {
-			var data = {url, title, summary, categories, language, email};
+			var data = {url, title, summary, categories, language, email, extensions, apiExtensions};
 			this.ecosystem.insert(data, (err, ecosystem) => {
 				if (err) {
 					reject(err);
@@ -325,12 +312,12 @@ module.exports = class Data {
 	}
 
 	checkCategories(categories) {
-		if (!Array.isArray(categories)) {
-			return [];
+		if (!Array.isArray(categories) || categories.length == 0) {
+			throw new Error(`At least one category is required`);
 		}
-		let invalidCategory = categories.find(cat => !this.categories.includes(cat));
+		let invalidCategory = categories.find(cat => !CATEGORIES.includes(cat));
 		if (invalidCategory) {
-			throw new Error('Category "' + invalidCategory + '" is invalid');
+			throw new Error(`Category '${invalidCategory}" is invalid`);
 		}
 		return categories;
 	}
@@ -343,6 +330,27 @@ module.exports = class Data {
 			throw new Error('Email is invalid');
 		}
 		return email;
+	}
+
+	checkExtensions(ext) {
+		return this._checkExtensions(ext, false);
+	}
+
+	checkApiExtensions(ext) {
+		return this._checkExtensions(ext, true);
+	}
+
+	_checkExtensions(extensions, api = false) {
+		if(!Array.isArray(extensions)) {
+			return [];
+		}
+		const allExtensions = Object.keys(api ? API_EXTENSIONS : EXTENSIONS);
+		let invalidExtension = extensions.find(e => !allExtensions.includes(e));
+		if (invalidExtension) {
+			const label = api ? "API Extension" : "Extension";
+			throw new Error(`${label} '${invalidExtension}' is invalid`);
+		}
+		return extensions;
 	}
 
 }

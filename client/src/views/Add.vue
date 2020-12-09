@@ -38,9 +38,17 @@
           <multiselect v-model="language" :options="languageList"></multiselect>
           <b-form-text>This should be the main programming language.</b-form-text>
         </b-form-group>
+        <b-form-group v-if="fields.includes('extensions')" label="Supported STAC Extensions:" label-for="extensions">
+          <multiselect v-model="extensions" :options="allExtensions" :multiple="true" :taggable="true" trackBy="id" label="label"></multiselect>
+          <b-form-text>Optional.</b-form-text>
+        </b-form-group>
+        <b-form-group v-if="fields.includes('apiExtensions')" label="Supported STAC API Extensions:" label-for="apiExtensions">
+          <multiselect v-model="apiExtensions" :options="allApiExtensions" :multiple="true" :taggable="true" trackBy="id" label="label"></multiselect>
+          <b-form-text>Optional.</b-form-text>
+        </b-form-group>
         <b-form-group v-if="fields.includes('email')" label="Contact e-mail:" label-for="email">
           <b-form-input id="email" type="email" v-model="email"></b-form-input>
-          <b-form-text>Not publicly displayed. Just used to contact you in case we have questions regarding your submission.</b-form-text>
+          <b-form-text>Optional. Not publicly displayed. Just used to contact you in case we have questions regarding your submission.</b-form-text>
         </b-form-group>
         <b-form-group v-if="fields.includes('private')" label="Access:" label-for="private">
           <b-form-checkbox id="private" v-model="accessPrivate" name="private" :value="true" :unchecked-value="false">This is a private {{ formTitle }}.</b-form-checkbox>
@@ -57,6 +65,7 @@
 import Multiselect from 'vue-multiselect';
 import slugify from 'slugify';
 import isPlainObject from 'lodash/isPlainObject';
+import { EXTENSIONS, API_EXTENSIONS, CATEGORIES } from '../../../commons';
 
 export default {
   name: 'Add',
@@ -71,7 +80,9 @@ export default {
           { text: 'Tool / Software', value: 'ecosystem' }
       ],
       languageList: [],
-      categoryList: [],
+      categoryList: CATEGORIES,
+      allExtensions: this.prepareMultiselect(EXTENSIONS),
+      allApiExtensions: this.prepareMultiselect(API_EXTENSIONS),
       error: null,
       confirmation: null,
       type: null,
@@ -81,6 +92,8 @@ export default {
       summary: null,
       language: null,
       categories: [],
+      extensions: [],
+      apiExtensions: [],
       accessPrivate: false,
       access: null,
       email: null,
@@ -163,6 +176,8 @@ export default {
       else if (this.type === 'ecosystem') {
         fields.push('language');
         fields.push('categories');
+        fields.push('extensions');
+        fields.push('apiExtensions');
       }
       return fields;
     }
@@ -177,17 +192,15 @@ export default {
     } catch (error) {
       console.error("Can't load list of programming languages.");
     }
-    try {
-      let response = await this.$axios.get('/categories');
-      if (!Array.isArray(response.data)) {
-        throw new Error("Response data for categories is not an array");
-      }
-      this.categoryList = response.data;
-    } catch (error) {
-      console.error("Can't load list of categories.");
-    }
   },
   methods: {
+    prepareMultiselect(obj) {
+      let arr = [];
+      for(let key in obj) {
+        arr.push({id: key, label: obj[key]});
+      }
+      return arr;
+    },
     stopSlugGen() {
       this.customSlug = true;
     },
@@ -202,6 +215,8 @@ export default {
       this.access = null;
       this.email = null;
       this.customSlug = false;
+      this.extensions = [];
+      this.apiExtensions = [];
     },
     async onSubmit(evt) {
       evt.preventDefault();
@@ -225,7 +240,9 @@ export default {
         language: this.language,
         categories: this.categories,
         access: this.access,
-        email: this.email
+        email: this.email,
+        extensions: this.extensions.map(e => e.id),
+        apiExtensions: this.apiExtensions.map(e => e.id)
       };
     }
   }

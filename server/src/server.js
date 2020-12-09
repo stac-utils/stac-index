@@ -148,7 +148,6 @@ class Server extends Config {
 		server.get('/', this.root.bind(this));
 		server.post('/add', this.add.bind(this));
 		server.get('/ecosystem', this.ecosystem.bind(this));
-		server.get('/categories', this.categories.bind(this));
 		server.get('/languages', this.languages.bind(this));
 		server.get('/catalogs', this.catalogs.bind(this));
 		server.get('/catalogs/:slug', this.catalogById.bind(this));
@@ -194,7 +193,7 @@ class Server extends Config {
 				}
 			case 'ecosystem':
 				try {
-					let eco = await this.data.addEcosystem(req.body.url, req.body.title, req.body.summary, req.body.categories, req.body.language, req.body.email);
+					let eco = await this.data.addEcosystem(req.body.url, req.body.title, req.body.summary, req.body.categories, req.body.language, req.body.email, req.body.extensions, req.body.apiExtensions);
 					res.send(200, eco);
 					return next();
 				} catch (e) {
@@ -245,11 +244,6 @@ class Server extends Config {
 
 	languages(req, res, next) {
 		res.send(this.data.getLanguages());
-		return next();
-	}
-
-	categories(req, res, next) {
-		res.send(this.data.getCategories());
 		return next();
 	}
 

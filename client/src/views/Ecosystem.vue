@@ -15,6 +15,7 @@
         <b-nav-item :active="!language" :to="'/ecosystem?category='+encodeURIComponent(category)">All</b-nav-item>
         <b-nav-item v-for="lang in languages" :key="lang" :active="language === lang" :to="'/ecosystem?category='+encodeURIComponent(category)+'&language='+encodeURIComponent(lang)">{{ lang }}</b-nav-item>
       </b-nav>
+      <!-- ToDo: Implement filters for extensions and api extensions -->
       <hr />
       <b-alert v-if="filtered.length === 0" show>No tool or software found.</b-alert>
       <b-list-group v-else>

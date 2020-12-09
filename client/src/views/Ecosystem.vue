@@ -7,15 +7,24 @@
     <template v-else>
       <h6>Filter by Category</h6>
       <b-nav pills small>
-        <b-nav-item :active="!category" :to="'/ecosystem?language='+encodeURIComponent(language)">All</b-nav-item>
-        <b-nav-item v-for="cat in categories" :key="cat" :active="category === cat" :to="'/ecosystem?category='+cat+'&language='+encodeURIComponent(language)">{{ cat }}</b-nav-item>
+        <b-nav-item :active="!category" :to="uri({category: null})">All</b-nav-item>
+        <b-nav-item v-for="cat in categories" :key="cat" :active="category === cat" :to="uri({category: cat})">{{ cat }}</b-nav-item>
       </b-nav>
       <h6>Filter by Programming Language</h6>
       <b-nav pills small>
-        <b-nav-item :active="!language" :to="'/ecosystem?category='+encodeURIComponent(category)">All</b-nav-item>
-        <b-nav-item v-for="lang in languages" :key="lang" :active="language === lang" :to="'/ecosystem?category='+encodeURIComponent(category)+'&language='+encodeURIComponent(lang)">{{ lang }}</b-nav-item>
+        <b-nav-item :active="!language" :to="uri({language: null})">All</b-nav-item>
+        <b-nav-item v-for="lang in languages" :key="lang" :active="language === lang" :to="uri({language: lang})">{{ lang }}</b-nav-item>
       </b-nav>
-      <!-- ToDo: Implement filters for extensions and api extensions -->
+      <h6>Filter by STAC Extension</h6>
+      <b-nav pills small>
+        <b-nav-item :active="!extension" :to="uri({extension: null})">All</b-nav-item>
+        <b-nav-item v-for="ext in extensions" :key="ext.key" :active="extension === ext.key" :to="uri({extension: ext.key})">{{ ext.value }}</b-nav-item>
+      </b-nav>
+      <h6>Filter by STAC API Extension</h6>
+      <b-nav pills small>
+        <b-nav-item :active="!apiExtension" :to="uri({apiExtension: null})">All</b-nav-item>
+        <b-nav-item v-for="ext in apiExtensions" :key="ext.key" :active="apiExtension === ext.key" :to="uri({apiExtension: ext.key})">{{ ext.value }}</b-nav-item>
+      </b-nav>
       <hr />
       <b-alert v-if="filtered.length === 0" show>No tool or software found.</b-alert>
       <b-list-group v-else>
@@ -26,6 +35,7 @@
 </template>
 
 <script>
+import { EXTENSIONS, API_EXTENSIONS } from '../../../commons';
 import EcosystemItem from './EcosystemItem.vue';
 
 export default {
@@ -39,6 +49,14 @@ export default {
       default: ""
     },
     category: {
+      type: String,
+      default: ""
+    },
+    extension: {
+      type: String,
+      default: ""
+    },
+    apiExtension: {
       type: String,
       default: ""
     }
@@ -61,33 +79,27 @@ export default {
         if (this.language && eco.language !== this.language) {
           return false;
         }
+        if (this.extension && !eco.extensions.includes(this.extension)) {
+          return false;
+        }
+        if (this.apiExtension && !eco.apiExtensions.includes(this.apiExtension)) {
+          return false;
+        }
 
         return true;
       });
     },
     languages() {
-      if (!Array.isArray(this.ecosystem)) {
-        return [];
-      }
-      let set = new Set();
-      for(let eco of this.ecosystem) {
-        if (eco.language) {
-          set.add(eco.language);
-        }
-      }
-      return Array.from(set);
+      return this.unique("language");
     },
     categories() {
-      if (!Array.isArray(this.ecosystem)) {
-        return [];
-      }
-      let set = new Set();
-      for(let eco of this.ecosystem) {
-        if (Array.isArray(eco.categories)) {
-          eco.categories.forEach(cat => set.add(cat));
-        }
-      }
-      return Array.from(set);
+      return this.unique("categories");
+    },
+    extensions() {
+      return this.unique("extensions").map(key => ({key: key, value: EXTENSIONS[key]}));
+    },
+    apiExtensions() {
+      return this.unique("apiExtensions").map(key => ({key: key, value: API_EXTENSIONS[key]}));
     }
   },
   async created() {
@@ -96,6 +108,38 @@ export default {
       this.ecosystem = response.data;
     } catch (error) {
       this.ecosystem = "Can't load ecosystem list from server. Please try again.";
+    }
+  },
+  methods: {
+    unique(field) {
+      if (!Array.isArray(this.ecosystem)) {
+        return [];
+      }
+      let set = new Set();
+      for(let eco of this.ecosystem) {
+        let val = eco[field];
+        if (Array.isArray(val)) {
+          val.forEach(element => set.add(element));
+        }
+        else if (typeof val === 'string') {
+          set.add(val);
+        }
+      }
+      return Array.from(set);
+    },
+    uri(change) {
+      var params = [];
+      for(var key in this.$props) {
+        if (change[key] === null) {
+          continue;
+        }
+        let val = this.$props[key];
+        if (val || change[key]) {
+          val = encodeURIComponent(change[key] || val);
+          params.push(key + '=' + val);
+        }
+      }
+      return "/ecosystem?" + params.join('&');
     }
   }
 }

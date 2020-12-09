@@ -7,6 +7,11 @@ const { EXTENSIONS, API_EXTENSIONS, CATEGORIES } = require('../../commons');
 
 const emailRegExp = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 
+function upgradeEcosystem(tools) {
+	// Add extensions and apiExtensions with default values as they are missing for some older entries
+	return tools.map(tool => Object.assign({extensions: [], apiExtensions: []}, tool));
+}
+
 module.exports = class Data {
 
 	constructor(storagePath) {
@@ -48,7 +53,7 @@ module.exports = class Data {
 					reject(err);
 				}
 				else {
-					resolve(data);
+					resolve(upgradeEcosystem(data));
 				}
 			});
 		});
@@ -61,7 +66,7 @@ module.exports = class Data {
 					reject(err);
 				}
 				else {
-					resolve(data);
+					resolve(upgradeEcosystem(data));
 				}
 			});
 		});

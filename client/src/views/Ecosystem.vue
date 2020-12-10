@@ -96,10 +96,10 @@ export default {
       return this.unique("categories");
     },
     extensions() {
-      return this.unique("extensions").map(key => ({key: key, value: EXTENSIONS[key]}));
+      return this.unique("extensions", EXTENSIONS);
     },
     apiExtensions() {
-      return this.unique("apiExtensions").map(key => ({key: key, value: API_EXTENSIONS[key]}));
+      return this.unique("apiExtensions", API_EXTENSIONS);
     }
   },
   async created() {
@@ -111,7 +111,7 @@ export default {
     }
   },
   methods: {
-    unique(field) {
+    unique(field, mapTo = null) {
       if (!Array.isArray(this.ecosystem)) {
         return [];
       }
@@ -125,7 +125,13 @@ export default {
           set.add(val);
         }
       }
-      return Array.from(set);
+      let arr = Array.from(set);
+      if (mapTo) {
+        return arr.map(key => ({key: key, value: mapTo[key]})).sort((a,b) => a.value.localeCompare(b.value));
+      }
+      else {
+        return arr.sort();
+      }
     },
     uri(change) {
       var params = [];

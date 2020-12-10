@@ -9,7 +9,7 @@
     </div>
     <small>
       Categories:
-      <b-badge v-for="cat in data.categories" :key="cat">{{ cat }}</b-badge>
+      <b-badge v-for="cat in categories" :key="cat">{{ cat }}</b-badge>
     </small>
     <small v-if="extensions.length">
       <br />Supported Extensions:
@@ -38,6 +38,9 @@ export default {
     }
   },
   computed: {
+    categories() {
+      return this.data.categories.sort();
+    },
     extensions() {
       return this.formatExtensions(this.data.extensions, EXTENSIONS).sort();
     },

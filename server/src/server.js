@@ -54,7 +54,7 @@ class Server extends Config {
 		return new Promise((resolve) => {
 			this.http_server.listen(this.port, () => {
 				this.serverUrl = "http://" + this.hostname + (this.exposedPort !== 80 ? ":" + this.exposedPort : "") + this.exposedPath;
-				console.info('HTTP-Server listening at %s', "http://" + this.hostname + (this.port !== 80 ? ":" + this.port : ""));
+				console.info('HTTP-Server listening at %s', "http://localhost" + (this.port !== 80 ? ":" + this.port : ""));
 				resolve();
 			});
 		});
@@ -72,12 +72,12 @@ class Server extends Config {
 				if (this.isHttpsEnabled()) {
 					this.https_server.listen(this.ssl.port, () => {
 						this.serverUrl = "https://" + this.hostname + ":" + (this.ssl.exposedPort !== 443 ? ":" + this.ssl.exposedPort : "") + this.exposedPath;
-						console.info('HTTPS-Server listening at %s', "https://" + this.hostname + ":" + this.ssl.port);
+						console.info('HTTPS-Server listening at %s', "https://localhost" + ":" + this.ssl.port);
 						resolve();
 					});
 				}
 				else {
-					console.warn('HTTPS not enabled.');
+					console.warn('HTTPS not enabled, see config.js to enable it.');
 					resolve();
 				}
 			});
@@ -117,7 +117,7 @@ class Server extends Config {
 			return next();
 		}
 
-		res.setHeader('access-control-allow-origin', req.headers['origin']);
+		res.setHeader('access-control-allow-origin', '*');
 		res.setHeader('access-control-expose-headers', this.corsExposeHeaders);
 		return next();
 	}
@@ -128,7 +128,7 @@ class Server extends Config {
 		}
 
 		res.once('header', () => {
-			res.header('access-control-allow-origin', req.headers['origin']);
+			res.header('access-control-allow-origin', '*');
 			res.header('access-control-expose-headers', this.corsExposeHeaders);
 			res.header('access-control-allow-methods', 'OPTIONS, GET, POST, PATCH, PUT, DELETE');
 			res.header('access-control-allow-headers', 'Content-Type');

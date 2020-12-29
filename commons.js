@@ -40,8 +40,21 @@ const CATEGORIES = [
 	'Visualization'
 ];
 
+const DEV = false;
+const HTTP_HOST = DEV ? 'localhost' : 'stacindex.org';
+const HTTP_INT_PORT = DEV ? 80 : 9999;
+const HTTP_PORT = DEV ? 80 : 80;
+const HTTP_PATH = DEV ? '' : '/api';
+const HTTPS = !DEV;
+
 module.exports = {
 	EXTENSIONS,
 	API_EXTENSIONS,
-	CATEGORIES
+	CATEGORIES,
+	DEV,
+	HTTP_HOST,
+	HTTP_PORT,
+	HTTP_INT_PORT,
+	HTTP_PATH,
+	HTTPS
 };

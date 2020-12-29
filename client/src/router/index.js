@@ -5,17 +5,6 @@ import NotFound from '../views/NotFound.vue'
 
 Vue.use(VueRouter)
 
-function toBoolean(str) {
-  switch(str) {
-    case 'true':
-      return true;
-    case 'false':
-      return false;
-    default:
-      return null;
-  }
-}
-
 const routes = [
   {
     path: '/',
@@ -25,7 +14,7 @@ const routes = [
     path: '/catalogs',
     name: 'Catalogs',
     component: () => import(/* webpackChunkName: "catalogs" */ '../views/Catalogs.vue'),
-    props: route => ({ access: toBoolean(route.query.access), type: route.query.type })
+    props: route => ({ access: route.query.access, type: route.query.type })
   },
   {
     path: '/catalogs/:id',

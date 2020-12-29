@@ -50,10 +50,24 @@
           <b-form-input id="email" type="email" v-model="email"></b-form-input>
           <b-form-text>Optional. Not publicly displayed. Just used to contact you in case we have questions regarding your submission.</b-form-text>
         </b-form-group>
-        <b-form-group v-if="fields.includes('private')" label="Access:" label-for="private">
-          <b-form-checkbox id="private" v-model="accessPrivate" name="private" :value="true" :unchecked-value="false">This is a private {{ formTitle }}.</b-form-checkbox>
-          <b-form-textarea v-if="accessPrivate" id="access" v-model="access" rows="3" required minlength="100" maxlength="1000"></b-form-textarea>
-          <b-form-text v-if="accessPrivate">Please give information how interested parties can gain access to the {{ formTitle }}. CommonMark (Markdown) is supported. Min. 100 chars, max. 1000 chars.</b-form-text>
+        <b-form-group v-if="fields.includes('access')" label="Access:" label-for="access">
+          <b-form-radio v-model="access" name="access" value="public">
+            Public
+            <b-form-text>All data is publicly available, i.e. everything is accessible without authentication.</b-form-text>
+          </b-form-radio>
+          <b-form-radio v-model="access" name="access" value="protected">
+            Protected
+            <b-form-text>Parts of the catalog are not public, e.g. only some collections are publicly accessible.</b-form-text>
+          </b-form-radio>
+          <b-form-radio v-model="access" name="access" value="private">
+            Private
+            <b-form-text>No public access, i.e. at least one collection or item must be publicly accessible.</b-form-text>
+          </b-form-radio>
+          <template v-if="access !== 'public'">
+            <b-form-text text-variant="black"><br />Please give information how interested parties can gain access to the {{ formTitle }} below:</b-form-text>
+            <b-form-textarea id="accessInfo" v-model="accessInfo" rows="3" required minlength="100" maxlength="1000"></b-form-textarea>
+            <b-form-text>CommonMark (Markdown) is supported. Min. 100 chars, max. 1000 chars.</b-form-text>
+          </template>
         </b-form-group>
         <b-button type="submit" variant="primary">Submit</b-button>
       </template>
@@ -94,8 +108,8 @@ export default {
       categories: [],
       extensions: [],
       apiExtensions: [],
-      accessPrivate: false,
-      access: null,
+      access: 'public',
+      accessInfo: null,
       email: null,
       customSlug: false,
       urlHint: "",
@@ -114,7 +128,7 @@ export default {
           try {
             catalog = await this.$axios.get(this.proxyUrl + encodeURIComponent(newUrl));
           } catch (error) {
-            this.accessPrivate = true;
+            this.access = 'private';
             this.urlHint = "Can't read the specified URL. Is the catalog private? Setting the API as 'private' for you...";
             this.urlHintType = "warning";
             return;
@@ -122,8 +136,9 @@ export default {
         }
 
         if (isPlainObject(catalog.data) && typeof catalog.data.id === 'string' && typeof catalog.data.description === 'string' && Array.isArray(catalog.data.links)) {
-          this.accessPrivate = false;
-          console.log(catalog.data);
+          if (this.access === 'private') {
+            this.access = 'protected';
+          }
           if (typeof catalog.data.title === 'string' && !this.title) {
             this.title = catalog.data.title;
           }
@@ -171,7 +186,7 @@ export default {
       let fields = ['url', 'title', 'summary', 'email'];
       if (this.type === 'catalog' || this.type === 'api') {
         fields.push('slug');
-        fields.push('private');
+        fields.push('access');
       }
       else if (this.type === 'ecosystem') {
         fields.push('language');
@@ -211,8 +226,8 @@ export default {
       this.summary = null;
       this.language = null,
       this.categories = [];
-      this.accessPrivate = false;
-      this.access = null;
+      this.access = 'public';
+      this.accessInfo = null;
       this.email = null;
       this.customSlug = false;
       this.extensions = [];
@@ -240,6 +255,7 @@ export default {
         language: this.language,
         categories: this.categories,
         access: this.access,
+        accessInfo: this.accessInfo,
         email: this.email,
         extensions: this.extensions.map(e => e.id),
         apiExtensions: this.apiExtensions.map(e => e.id)

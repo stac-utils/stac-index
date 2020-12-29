@@ -6,7 +6,8 @@
         <b-badge v-if="data.isApi" variant="secondary">API</b-badge>
         <b-badge v-else variant="secondary" title="Static Catalog">Catalog</b-badge>
         
-        <b-badge v-if="data.isPrivate" variant="dark">Private</b-badge>
+        <b-badge v-if="data.access === 'private'" variant="danger">Private</b-badge>
+        <b-badge v-else-if="data.access === 'protected'" variant="warning">Protected</b-badge>
         <b-badge v-else variant="success">Public</b-badge>
       </small>
     </div>

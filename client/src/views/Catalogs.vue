@@ -14,8 +14,8 @@
       <h6>Filter by Access Level</h6>
       <b-nav pills small>
         <b-nav-item :active="access === null" :to="'/catalogs?type='+encodeURIComponent(type)">All</b-nav-item>
-        <b-nav-item :active="access === true" :to="'/catalogs?access=true&type='+encodeURIComponent(type)">Public</b-nav-item>
-        <b-nav-item :active="access === false" :to="'/catalogs?access=false&type='+encodeURIComponent(type)">Private</b-nav-item>
+        <b-nav-item :active="access === 'public'" :to="'/catalogs?access=public&type='+encodeURIComponent(type)">Public only</b-nav-item>
+        <b-nav-item :active="access === 'protected'" :to="'/catalogs?access=protected&type='+encodeURIComponent(type)">Public &amp; Protected only</b-nav-item>
       </b-nav>
       <hr />
       <b-alert v-if="filtered.length === 0" show>No Collections found.</b-alert>
@@ -36,7 +36,7 @@ export default {
   },
   props: {
     access: {
-      type: Boolean,
+      type: String,
       default: null
     },
     type: {
@@ -56,10 +56,10 @@ export default {
       }
 
       return this.data.filter(col => {
-        if (this.access === true && col.isPrivate) {
-          return false;
+        if (this.access === 'protected' && col.access === 'public') {
+          return true; // Include public catalogs in list of protected catalogs
         }
-        else if (this.access === false && !col.isPrivate) {
+        else if (this.access !== null && this.access !== col.access) {
           return false;
         }
 

@@ -184,7 +184,7 @@ class Server extends Config {
 			case 'api':
 			case 'catalog':
 				try {
-					let catalog = await this.data.addCatalog(req.body.type === 'api', req.body.url, req.body.slug, req.body.title, req.body.summary, req.body.access, req.body.email);
+					let catalog = await this.data.addCatalog(req.body.type === 'api', req.body.url, req.body.slug, req.body.title, req.body.summary, req.body.access, req.body.accessInfo, req.body.email);
 					res.send(200, catalog);
 					return next();
 				} catch (e) {

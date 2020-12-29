@@ -2,28 +2,36 @@
   <b-container fluid class="browse content">
     <b-spinner v-if="data === null" label="Loading..."></b-spinner>
     <b-alert v-else-if="typeof data === 'string'" variant="danger" show>{{ data }}</b-alert>
-    <template v-else-if="!showBrowser">
-      <h1>{{ data.title }}</h1>
-      <p><a :href="data.url" target="_blank"><code>{{ data.url }}</code></a></p>
-      <b-alert variant="info" show>
-        <p><strong>This {{ type }} is private!</strong></p>
-        <Description :description="data.access" />
+    <b-container v-else>
+      <b-alert v-if="data.access !== 'public'" variant="info" show>
+        <p>
+          <strong>This {{ type }} is {{ data.access }}!</strong>&nbsp;
+          <template v-if="data.access === 'protected'">You can browse parts of the catalog, but some parts may not load up. Please follow these instructions to gain full access:</template>
+          <template v-else>Please follow these instructions to gain access:</template>
+        </p>
+        <blockquote>
+          <Description :description="data.accessInfo" />
+        </blockquote>
       </b-alert>
-    </template>
-    <template v-else>
-      <b-alert v-if="isHttp || corsWarning" variant="warning" show>
-        <template v-if="isHttp">
-          This {{ type }} is accessible only via unsecured HTTP and can't be accessed directly from a secured web page.
-        </template>
-        <template v-if="corsWarning">
-          This {{ type }} doesn't support <a href="https://developer.mozilla.org/de/docs/Web/HTTP/CORS" target="_blank">CORS</a>.
-        </template>
-        STAC Index tries to proxy the request, but links, images or other references might be broken while browing through the {{ type }}.
-        The URLs shown below will include the STAC Index proxy (<code>{{ proxyUrl }}</code>) and should not be used as provided in the browser.
-        Use the offical link to the {{ type }} instead:<br /><a :href="data.url" target="_blank"><code>{{ data.url }}</code></a>
-      </b-alert>
-      <div id="stac-browser"></div>
-    </template>
+      <template v-if="data.access === 'private'">
+        <h1>{{ data.title }}</h1>
+        <p><a :href="data.url" target="_blank"><code>{{ data.url }}</code></a></p>
+      </template>
+      <template v-else>
+        <b-alert v-if="isHttp || corsWarning" variant="warning" show>
+          <template v-if="isHttp">
+            This {{ type }} is accessible only via unsecured HTTP and can't be accessed directly from a secured web page.
+          </template>
+          <template v-if="corsWarning">
+            This {{ type }} doesn't support <a href="https://developer.mozilla.org/de/docs/Web/HTTP/CORS" target="_blank">CORS</a>.
+          </template>
+          STAC Index tries to proxy the request, but links, images or other references might be broken while browing through the {{ type }}.
+          The URLs shown below will include the STAC Index proxy (<code>{{ proxyUrl }}</code>) and should not be used as provided in the browser.
+          Use the offical link to the {{ type }} instead:<br /><a :href="data.url" target="_blank"><code>{{ data.url }}</code></a>
+        </b-alert>
+        <div v-if="data.access !== 'private'" id="stac-browser"></div>
+      </template>
+    </b-container>
   </b-container>
 </template>
 
@@ -67,9 +75,6 @@ export default {
         return "Catalog";
       }
     },
-    showBrowser() {
-      return isPlainObject(this.data) && !this.data.isPrivate;
-    },
     proxyUrl() {
       return this.$axios.defaults.baseURL + '/proxy?';
     }
@@ -84,7 +89,7 @@ export default {
       }
       else {
         this.data = response.data;
-        if (this.showBrowser) {
+        if (this.data.access !== 'private') {
           let createBrowser = require('stac-browser/src/main').default;
           let url = this.data.url;
           if (url.startsWith('http://')) {
@@ -121,8 +126,27 @@ export default {
 }
 </script>
 
+<style scoped>
+blockquote {
+  border-left: 5px rgba(0,0,0,0.5) solid;
+  padding-left: 1em;
+  margin: 0;
+}
+</style>
+
 <style>
+@media (min-width: 1900px) {
+  #stac-browser .container, .browse .container {
+      max-width: 1600px;
+  }
+}
 #stac-browser {
+  font-size: 0.95em;
+}
+#stac-browser .loaded {
   margin: 0 -15px;
+}
+#stac-browser a.btn-outline-dark:hover {
+  color: #fff;
 }
 </style>

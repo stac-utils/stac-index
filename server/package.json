@@ -25,7 +25,7 @@
     "url": "git+https://github.com/stac-utils/stac-index.git"
   },
   "devDependencies": {
-    "forever": "^3.0.2",
+    "forever": "^3.0.4",
     "nodemon": "^2.0.6"
   },
   "dependencies": {

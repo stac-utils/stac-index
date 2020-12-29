@@ -6,6 +6,7 @@ const Levenshtein = require('levenshtein');
 const { EXTENSIONS, API_EXTENSIONS, CATEGORIES } = require('../../commons');
 
 const emailRegExp = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+const validAccess = ['public', 'protected', 'private'];
 
 function upgradeEcosystem(tools) {
 	// Add extensions and apiExtensions with default values as they are missing for some older entries
@@ -15,8 +16,6 @@ function upgradeEcosystem(tools) {
 function upgradeCatalog(catalog) {
 	// Keep legacy "isPrivate" flag for external APIs
 	catalog.isPrivate = Boolean(catalog.access !== "public");
-	catalog.access = catalog.accessInfo;
-	delete catalog.accessInfo;
 	return catalog;
 }
 
@@ -173,18 +172,15 @@ module.exports = class Data {
 		});
 	}
 
-	async addCatalog(isApi, url, slug, title, summary, access = null, email = null) {
+	async addCatalog(isApi, url, slug, title, summary, access = 'private', accessInfo = null, email = null) {
 		if (typeof isApi !== 'boolean') {
 			isApi = false;
 		}
 
 		access = this.checkAccess(access);
-		let isPrivate = false;
-		if (typeof access === 'string' && access.length > 0) {
-			isPrivate = true;
-		}
+		accessInfo = this.checkAccessInfo(access, accessInfo);
 
-		url = await this.checkUrl(url, !isPrivate);
+		url = await this.checkUrl(url, access !== 'private');
 		slug = this.checkSlug(slug);
 		title = this.checkTitle(title);
 		summary = this.checkSummary(summary);
@@ -195,7 +191,7 @@ module.exports = class Data {
 		}
 
 		return new Promise((resolve, reject) => {
-			var data = {isApi, isPrivate, slug, url, title, summary, access, email};
+			var data = {isApi, slug, url, title, summary, access, accessInfo, email};
 			this.catalogs.insert(data, (err, catalog) => {
 				if (err) {
 					reject(err);
@@ -264,14 +260,12 @@ module.exports = class Data {
 	}
 
 	checkSlug(slug) {
-		if (typeof slug !== 'string') {
-			throw new Error('Slug is not a string');
-		}
-		else if (slug.length < 3) {
-			throw new Error('Slug must be at least 3 characters');
+		let length = typeof slug === 'string' ? slug.length : 0;
+		if (slug.length < 3) {
+			throw new Error(`Slug must be at least 3 characters, is ${length} characters`);
 		}
 		else if (slug.length > 50) {
-			throw new Error('Slug must be no longer than 50 characters');
+			throw new Error(`Slug must be no longer than 50 characters, is ${length} characters`);
 		}
 		else if (!slug.match(/^[a-z0-9-]+$/)) {
 			throw new Error('Slug must only contain the following characters: a-z, 0-9, -');
@@ -280,40 +274,48 @@ module.exports = class Data {
 	}
 
 	checkTitle(title) {
-		if (typeof title !== 'string') {
-			throw new Error('Title is not a string');
-		}
-		else if (title.length < 3) {
-			throw new Error('Title must be at least 3 characters');
+		let length = typeof title === 'string' ? title.length : 0;
+		if (title.length < 3) {
+			throw new Error(`Title must be at least 3 characters, is ${length} characters`);
 		}
 		else if (title.length > 50) {
-			throw new Error('Title must be no longer than 50 characters');
+			throw new Error(`Title must be no longer than 50 characters, is ${length} characters`);
 		}
 		return title;
 	}
 
 	checkAccess(access) {
-		if (typeof access !== 'string') {
-			return null;
-		}
-		else if (access.length < 100) {
-			throw new Error('Access information must be at least 100 characters');
-		}
-		else if (access.length > 1000) {
-			throw new Error('Access information must be no longer than 1000 characters');
+		if (!validAccess.includes(access)) {
+			throw new Error('Access must by one of `public`, `protected` or `private`');
 		}
 		return access;
 	}
+
+	checkAccessInfo(access, accessInfo) {
+		if (typeof access === 'public') {
+			return null;
+		}
+
+		let length = typeof accessInfo === 'string' ? accessInfo.length : 0;
+		if (length < 100) {
+			throw new Error(`Access details must be at least 100 characters, is ${length} characters`);
+		}
+		else if (accessInfo.length > 1000) {
+			throw new Error(`Access details must be no longer than 1000 characters, is ${length} characters`);
+		}
+		return accessInfo;
+	}
+
 
 	checkSummary(summary) {
 		if (typeof summary !== 'string') {
 			throw new Error('Summary is not a string');
 		}
 		else if (summary.length < 50) {
-			throw new Error('Summary must be at least 50 characters');
+			throw new Error(`Summary must be at least 50 characters, is ${summary.length} characters`);
 		}
 		else if (summary.length > 300) {
-			throw new Error('Summary must be no longer than 300 characters');
+			throw new Error(`Summary must be no longer than 300 characters, is ${summary.length} characters`);
 		}
 		return summary;
 	}

@@ -12,6 +12,18 @@ function upgradeEcosystem(tools) {
 	return tools.map(tool => Object.assign({extensions: [], apiExtensions: []}, tool));
 }
 
+function upgradeCatalog(catalog) {
+	// Keep legacy "isPrivate" flag for external APIs
+	catalog.isPrivate = Boolean(catalog.access !== "public");
+	catalog.access = catalog.accessInfo;
+	delete catalog.accessInfo;
+	return catalog;
+}
+
+function upgradeCatalogs(catalogs) {
+	return catalogs.map(catalog => upgradeCatalog(catalog));
+}
+
 module.exports = class Data {
 
 	constructor(storagePath) {
@@ -92,7 +104,7 @@ module.exports = class Data {
 					reject(err);
 				}
 				else {
-					resolve(data);
+					resolve(upgradeCatalogs(data));
 				}
 			});
 		});
@@ -105,7 +117,7 @@ module.exports = class Data {
 					reject(err);
 				}
 				else {
-					resolve(data);
+					resolve(upgradeCatalogs(data));
 				}
 			});
 		});
@@ -131,7 +143,7 @@ module.exports = class Data {
 					reject(err);
 				}
 				else {
-					resolve(data);
+					resolve(upgradeCatalog(data));
 				}
 			});
 		});

@@ -6,7 +6,7 @@
     <b-alert v-else-if="typeof data === 'string'" variant="danger" show>{{ data }}</b-alert>
     <template v-else>
       <b-alert v-if="filtered.length === 0" show>
-        No Collections found.
+        No collections found.
         This functionality has not been implemented yet.
         The idea is to crawl all STAC catalogs and APIs so that you can search on all of them here using the Collection Summaries.
         Stay tuned!

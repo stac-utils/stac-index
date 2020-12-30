@@ -17,16 +17,16 @@
       <b-button to="/ecosystem">Ecosystem</b-button>
     </b-jumbotron>
 
-    <template v-if="newest">
+    <template v-if="newest.data.length > 0 || newest.ecosystem.length > 0">
       <h2>Recently added</h2>
       <b-card-group deck>
-        <b-card header="Catalogs">
+        <b-card header="Catalogs" v-if="newest.data.length > 0">
           <b-list-group>
             <DataItem v-for="data in newest.data" :key="data._id" :data="data" />
           </b-list-group>
         </b-card>
 
-        <b-card header="Ecosystem">
+        <b-card header="Ecosystem" v-if="newest.ecosystem.length > 0">
           <b-list-group>
             <EcosystemItem v-for="data in newest.ecosystem" :key="data._id" :data="data" />
           </b-list-group>

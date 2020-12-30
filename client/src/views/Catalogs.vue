@@ -18,7 +18,7 @@
         <b-nav-item :active="access === 'protected'" :to="'/catalogs?access=protected&type='+encodeURIComponent(type)">Public &amp; Protected only</b-nav-item>
       </b-nav>
       <hr />
-      <b-alert v-if="filtered.length === 0" show>No Collections found.</b-alert>
+      <b-alert v-if="filtered.length === 0" show>No catalogs found.</b-alert>
       <b-list-group v-else>
         <DataItem v-for="item in filtered" :key="item._id" :data="item" />
       </b-list-group>

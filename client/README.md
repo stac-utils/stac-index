@@ -5,17 +5,20 @@
 npm install
 ```
 
-### Compiles and hot-reloads for development
+You should also [run a server](../server/README.md).
+
+### Run for development (with hot-reloading)
+
 ```
 npm run serve
 ```
 
-### Compiles and minifies for production
+### Compile and minify for production
 ```
 npm run build
 ```
 
-### Lints and fixes files
+### Lint files
 ```
 npm run lint
 ```

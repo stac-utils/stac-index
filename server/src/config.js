@@ -1,4 +1,4 @@
-const { DEV, HTTP_HOST, HTTP_PATH, HTTP_INT_PORT, HTTP_PORT } = require('../../commons');
+const { DEV, HTTP_HOST, HTTP_PATH, HTTP_INT_PORT, HTTP_PORT, DATABASE } = require('../../commons');
 
 module.exports = class Config {
 	constructor() {
@@ -17,12 +17,6 @@ module.exports = class Config {
 			ignoreTrailingSlash: true
 		};
 		this.corsExposeHeaders = 'Location';
-		this.db = {
-			user: 'postgres',
-			host: 'localhost',
-			database: 'stacindex',
-			password: '',
-			port: 5432
-		};
+		this.db = DATABASE;
 	}
 }

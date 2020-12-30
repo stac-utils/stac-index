@@ -5,9 +5,9 @@
 npm install
 ```
 
-###Deploy PostgreSQL 13+ database
+### Deploy PostgreSQL 13+ database
 
-See [database/create.sql](database/create.sql) for the SQL schema.
+See [database/create.sql](../database/create.sql) for the SQL schema.
 
 ### Configure
 

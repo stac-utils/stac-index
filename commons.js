@@ -47,6 +47,14 @@ const HTTP_PORT = DEV ? 80 : 80;
 const HTTP_PATH = DEV ? '' : '/api';
 const HTTPS = !DEV;
 
+const DATABASE = {
+	user: 'postgres',
+	host: 'localhost',
+	database: 'stacindex',
+	password: '',
+	port: 5432
+};
+
 module.exports = {
 	EXTENSIONS,
 	API_EXTENSIONS,
@@ -56,5 +64,6 @@ module.exports = {
 	HTTP_PORT,
 	HTTP_INT_PORT,
 	HTTP_PATH,
-	HTTPS
+	HTTPS,
+	DATABASE
 };

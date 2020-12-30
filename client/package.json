@@ -1,6 +1,6 @@
 {
   "name": "stac-index-client",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "The client component for STAC Index.",
   "keywords": [
     "stac",
@@ -14,7 +14,7 @@
   },
   "author": "Matthias Mohr",
   "license": "Apache-2.0",
-  "homepage": "http://stac-index.lutana.de",
+  "homepage": "https://stac-index.org",
   "bugs": {
     "url": "https://github.com/stac-utils/stac-index/issues"
   },

@@ -1,6 +1,6 @@
 {
   "name": "stac-index-server",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "The server component for STAC Index.",
   "keywords": [
     "stac",
@@ -16,7 +16,7 @@
   },
   "author": "Matthias Mohr",
   "license": "Apache-2.0",
-  "homepage": "http://stac-index.lutana.de",
+  "homepage": "https://stac-index.org",
   "bugs": {
     "url": "https://github.com/stac-utils/stac-index/issues"
   },
@@ -36,10 +36,5 @@
     "lodash": "^4.17.20",
     "pg": "^8.5.1",
     "restify": "^8.3.3"
-  },
-  "nodemonConfig": {
-    "ignore": [
-      "storage/*"
-    ]
   }
 }

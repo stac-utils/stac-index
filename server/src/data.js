@@ -172,14 +172,13 @@ module.exports = class Data {
 		});
 	}
 
-	async addCatalog(isApi, url, slug, title, summary, access = 'private', accessInfo = null, email = null) {
+	async addCatalog(isApi, url, slug, title, summary, access = 'public', accessInfo = null, email = null) {
 		if (typeof isApi !== 'boolean') {
 			isApi = false;
 		}
 
 		access = this.checkAccess(access);
 		accessInfo = this.checkAccessInfo(access, accessInfo);
-
 		url = await this.checkUrl(url, access !== 'private');
 		slug = this.checkSlug(slug);
 		title = this.checkTitle(title);
@@ -210,7 +209,7 @@ module.exports = class Data {
 					return reject(err);
 				}
 				let similar = data.find(col => {
-					if (url.startsWith(col.url)) {
+					if (url.toLowerCase().startsWith(col.url.toLowerCase())) {
 						return true;
 					}
 					let urlDist = new Levenshtein(col.url, url);
@@ -292,7 +291,7 @@ module.exports = class Data {
 	}
 
 	checkAccessInfo(access, accessInfo) {
-		if (typeof access === 'public') {
+		if (access === 'public') {
 			return null;
 		}
 
@@ -306,16 +305,13 @@ module.exports = class Data {
 		return accessInfo;
 	}
 
-
 	checkSummary(summary) {
-		if (typeof summary !== 'string') {
-			throw new Error('Summary is not a string');
+		let length = typeof summary === 'string' ? summary.length : 0;
+		if (length < 50) {
+			throw new Error(`Summary must be at least 50 characters, is ${length} characters`);
 		}
-		else if (summary.length < 50) {
-			throw new Error(`Summary must be at least 50 characters, is ${summary.length} characters`);
-		}
-		else if (summary.length > 300) {
-			throw new Error(`Summary must be no longer than 300 characters, is ${summary.length} characters`);
+		else if (length > 300) {
+			throw new Error(`Summary must be no longer than 300 characters, is ${length} characters`);
 		}
 		return summary;
 	}

@@ -4,7 +4,6 @@ const Utils = require('lodash');
 const Data = require('./data');
 const Config = require('./config');
 const axios = require('axios');
-const { isPlainObject } = require('lodash');
 
 const LINK_REL = [
 	'child',
@@ -292,7 +291,7 @@ class Server extends Config {
 				maxContentLength: 100000
 			});
 
-			if (!isPlainObject(response.data) || (typeof response.data.stac_version !== 'stac_version' && !Array.isArray(response.data.links))) {
+			if (!Utils.isPlainObject(response.data) || (typeof response.data.stac_version !== 'stac_version' && !Array.isArray(response.data.links))) {
 				throw new Error("Proxy only supports valid STAC");
 			}
 	

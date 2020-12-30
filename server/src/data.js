@@ -1,4 +1,5 @@
 const LANGUAGES = require('list-of-programming-languages');
+const Datastore = require('nedb');
 const { Pool } = require('pg');
 const axios = require('axios');
 const Utils = require('lodash');
@@ -13,6 +14,41 @@ module.exports = class Data {
 	constructor(db) {
 		this.db = new Pool(db);
 		this.loadLanguages();
+
+		this.migrate('ecosystem');
+		this.migrate('catalogs');
+	}
+
+	async migrate(name) {
+		let db = new Datastore({
+			filename: 'storage/' + name + '.db',
+			autoload: true,
+			timestampData: true,
+			compareStrings: (a, b) => {
+				return a.toLowerCase().localeCompare(b.toLowerCase());
+			}
+		});
+
+		db.find({}).sort({ createdAt: 1 }).exec(async (err, data) => {
+			if (err) {
+				console.error(err);
+			}
+			else {
+				for(var i in data) {
+					let d = data[i];
+					try {
+						if (name === 'ecosystem') {
+							await this.addEcosystem(d.url, d.title, d.summary, d.categories, d.language, d.email, d.extensions, d.apiExtensions, d.createdAt, d.updatedAt);
+						}
+						else {
+							await this.addCatalog(d.isApi, d.url, d.slug, d.title, d.summary, d.access, d.accessInfo, d.email, d.createdAt, d.updatedAt);
+						}
+					} catch (error) {
+						console.error(error, d._id);
+					}
+				}
+			}
+		});
 	}
 
 	loadLanguages() {
@@ -113,8 +149,13 @@ module.exports = class Data {
 	async insertFromObject(data, table, timestamps = true) {
 		try {
 			if (timestamps) {
-				data.created = new Date();
-				data.updated = new Date();
+				let earlier = new Date('2020-08-20T00:00:00Z');
+				if (!data.created) {
+					data.created = earlier;
+				}
+				if (!data.updated) {
+					data.updated = earlier;
+				}
 			}
 			const values = Object.values(data);
 			const columns = Object.keys(data).join(', ');
@@ -132,7 +173,7 @@ module.exports = class Data {
 		}
 	}
 	
-	async addEcosystem(url, title, summary, categories = [], language = null, email = null, extensions = [], apiExtensions = []) {
+	async addEcosystem(url, title, summary, categories = [], language = null, email = null, extensions = [], apiExtensions = [], created = null, updated = null) {
 		url = await this.checkUrl(url);
 		title = this.checkTitle(title);
 		summary = this.checkSummary(summary);
@@ -143,7 +184,7 @@ module.exports = class Data {
 		apiExtensions = this.checkApiExtensions(apiExtensions);
 		await this.checkDuplicates("ecosystem", url);
 
-		var data = {url, title, summary, categories, language, email, extensions, api_extensions: apiExtensions};
+		var data = {url, title, summary, categories, language, email, extensions, api_extensions: apiExtensions, created, updated};
 		const ecosystem = await this.insertFromObject(data, "ecosystem");
 		if (ecosystem) {
 			return this.upgradeEcosystem(ecosystem);
@@ -153,14 +194,14 @@ module.exports = class Data {
 		}
 	}
 
-	async addCatalog(isApi, url, slug, title, summary, access = 'public', accessInfo = null, email = null) {
+	async addCatalog(isApi, url, slug, title, summary, access = 'public', accessInfo = null, email = null, created = null, updated = null) {
 		if (typeof isApi !== 'boolean') {
 			isApi = false;
 		}
 
 		access = this.checkAccess(access);
 		accessInfo = this.checkAccessInfo(access, accessInfo);
-		url = await this.checkUrl(url, access !== 'private');
+//		url = await this.checkUrl(url, access !== 'private');
 		slug = this.checkSlug(slug);
 		title = this.checkTitle(title);
 		summary = this.checkSummary(summary);
@@ -170,13 +211,13 @@ module.exports = class Data {
 			throw new Error("Another catalog with the given slug exists. Please choose a different slug.");
 		}
 
-		var data = {slug, url, title, summary, access, access_info: accessInfo, email, is_api: isApi};
+		var data = {slug, url, title, summary, access, access_info: accessInfo, email, is_api: isApi, created, updated};
 		const catalog = await this.insertFromObject(data, "catalogs");
 		if (catalog) {
 			return this.upgradeCatalog(catalog);
 		}
 		else {
-			throw new Error("Adding to the catalog database failed. Please contact us for details.");
+//			throw new Error("Adding to the catalog database failed. Please contact us for details.");
 		}
 	}
 
@@ -280,7 +321,7 @@ module.exports = class Data {
 		if (length < 50) {
 			throw new Error(`Summary must be at least 50 characters, is ${length} characters`);
 		}
-		else if (length > 300) {
+		else if (length > 1000) {
 			throw new Error(`Summary must be no longer than 300 characters, is ${length} characters`);
 		}
 		return summary;

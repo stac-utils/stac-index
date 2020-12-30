@@ -49,7 +49,10 @@ export default {
   },
   data() {
     return {
-      newest: null
+      newest: {
+        data: [],
+        ecosystem: []
+      }
     };
   },
   async created() {

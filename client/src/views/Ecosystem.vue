@@ -134,6 +134,7 @@ export default {
       }
     },
     uri(change) {
+      // See also: Catalogs.vue -> methods -> uri
       var params = [];
       for(var key in this.$props) {
         if (change[key] === null) {

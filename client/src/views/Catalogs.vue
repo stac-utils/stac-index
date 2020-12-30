@@ -7,15 +7,15 @@
     <template v-else>
       <h6>Filter by Type</h6>
       <b-nav pills small>
-        <b-nav-item :active="!type" :to="'/catalogs?access='+encodeURIComponent(access)">All</b-nav-item>
-        <b-nav-item :active="type === 'api'" :to="'/catalogs?type=api&access='+encodeURIComponent(access)">APIs</b-nav-item>
-        <b-nav-item :active="type === 'static'" :to="'/catalogs?type=static&access='+encodeURIComponent(access)">Static Catalogs</b-nav-item>
+        <b-nav-item :active="!type" :to="uri({type: null})">All</b-nav-item>
+        <b-nav-item :active="type === 'api'" :to="uri({type: 'api'})">APIs</b-nav-item>
+        <b-nav-item :active="type === 'static'" :to="uri({type: 'static'})">Static Catalogs</b-nav-item>
       </b-nav>
       <h6>Filter by Access Level</h6>
       <b-nav pills small>
-        <b-nav-item :active="access === null" :to="'/catalogs?type='+encodeURIComponent(type)">All</b-nav-item>
-        <b-nav-item :active="access === 'public'" :to="'/catalogs?access=public&type='+encodeURIComponent(type)">Public only</b-nav-item>
-        <b-nav-item :active="access === 'protected'" :to="'/catalogs?access=protected&type='+encodeURIComponent(type)">Public &amp; Protected only</b-nav-item>
+        <b-nav-item :active="access === null" :to="uri({access: null})">All</b-nav-item>
+        <b-nav-item :active="access === 'public'" :to="uri({access: 'public'})">Public only</b-nav-item>
+        <b-nav-item :active="access === 'protected'" :to="uri({access: 'protected'})">Public &amp; Protected only</b-nav-item>
       </b-nav>
       <hr />
       <b-alert v-if="filtered.length === 0" show>No catalogs found.</b-alert>
@@ -80,6 +80,23 @@ export default {
       this.data = response.data;
     } catch (error) {
       this.data = "Can't load list of Catalogs from the server: " + error.message;
+    }
+  },
+  methods: {
+    uri(change) {
+      // See also: Ecosystem.vue -> methods -> uri
+      var params = [];
+      for(var key in this.$props) {
+        if (change[key] === null) {
+          continue;
+        }
+        let val = this.$props[key];
+        if (val || change[key]) {
+          val = encodeURIComponent(change[key] || val);
+          params.push(key + '=' + val);
+        }
+      }
+      return "/catalogs?" + params.join('&');
     }
   }
 }

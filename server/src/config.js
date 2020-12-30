@@ -17,5 +17,12 @@ module.exports = class Config {
 			ignoreTrailingSlash: true
 		};
 		this.corsExposeHeaders = 'Location';
+		this.db = {
+			user: 'postgres',
+			host: 'localhost',
+			database: 'stacindex',
+			password: '',
+			port: 5432
+		};
 	}
 }

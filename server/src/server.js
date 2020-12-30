@@ -27,7 +27,7 @@ class Server extends Config {
 		this.https_server = null;
 
 		this.afterServerStartListener = [];
-		this.data = new Data('storage/');
+		this.data = new Data(this.db);
 
 		this.startServer();
 	}
@@ -160,9 +160,9 @@ class Server extends Config {
 	root(req, res, next) {
 		res.send(200, {
 			stac_version: "0.9.0",
-			id:"stac-index",
+			id: "stac-index",
 			description: "Root catalog of STAC Index.",
-			links:[
+			links: [
 				{
 					rel: "data",
 					href: this.serverUrl + "/collections",
@@ -225,8 +225,14 @@ class Server extends Config {
 	}
 
 	async catalogById(req, res, next) {
-		var slug = req.params['slug'];
-		res.send(await this.data.getCatalog(slug));
+		const slug = req.params['slug'];
+		const catalog = await this.data.getCatalog(slug);
+		if (catalog) {
+			res.send(catalog);
+		}
+		else {
+			res.send(404, `Catalog with slug '${slug}' doesn't exist`);
+		}
 		return next();
 	}
 
@@ -237,7 +243,7 @@ class Server extends Config {
 
 	async collectionById(req, res, next) {
 		var id = req.params['id'];
-		res.send(await this.data.getCollection(slug, id));
+		res.send(await this.data.getCollection(id));
 		return next();
 	}
 

@@ -1,5 +1,5 @@
 const LANGUAGES = require('list-of-programming-languages');
-const Datastore = require('nedb');
+const { Pool } = require('pg');
 const axios = require('axios');
 const Utils = require('lodash');
 const Levenshtein = require('levenshtein');
@@ -8,42 +8,11 @@ const { EXTENSIONS, API_EXTENSIONS, CATEGORIES } = require('../../commons');
 const emailRegExp = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 const validAccess = ['public', 'protected', 'private'];
 
-function upgradeEcosystem(tools) {
-	// Add extensions and apiExtensions with default values as they are missing for some older entries
-	return tools.map(tool => Object.assign({extensions: [], apiExtensions: []}, tool));
-}
-
-function upgradeCatalog(catalog) {
-	// Keep legacy "isPrivate" flag for external APIs
-	catalog.isPrivate = Boolean(catalog.access !== "public");
-	return catalog;
-}
-
-function upgradeCatalogs(catalogs) {
-	return catalogs.map(catalog => upgradeCatalog(catalog));
-}
-
 module.exports = class Data {
 
-	constructor(storagePath) {
-		this.ecosystem = this.load('ecosystem', storagePath);
-		this.catalogs = this.load('catalogs', storagePath);
-		this.collections = this.load('collections', storagePath);
+	constructor(db) {
+		this.db = new Pool(db);
 		this.loadLanguages();
-	}
-
-
-	load(name, folder) {
-		let db = new Datastore({
-			filename: folder + name + '.db',
-			autoload: true,
-			timestampData: true,
-			compareStrings: (a, b) => {
-				return a.toLowerCase().localeCompare(b.toLowerCase());
-			}
-		});
-		db.persistence.setAutocompactionInterval(24 * 60 * 60 * 1000); // Once every day
-		return db;
 	}
 
 	loadLanguages() {
@@ -58,94 +27,109 @@ module.exports = class Data {
 	}
 
 	async getEcosystem() {
-		return new Promise((resolve, reject) => {
-			this.ecosystem.find({}, { email: 0 }).sort({ title: 1 }).exec(function (err, data) {
-				if (err) {
-					reject(err);
-				}
-				else {
-					resolve(upgradeEcosystem(data));
-				}
-			});
-		});
+		return this.upgradeEcosystems(await this.getAll("ecosystem"));
 	}
 
 	async getNewestEcosystem(recent = 3) {
-		return new Promise((resolve, reject) => {
-			this.ecosystem.find({}, { email: 0 }).sort({ createdAt: -1 }).limit(recent).exec(function (err, data) {
-				if (err) {
-					reject(err);
-				}
-				else {
-					resolve(upgradeEcosystem(data));
-				}
-			});
-		});
+		return this.upgradeEcosystems(await this.getNewest("ecosystem", recent));
 	}
 
 	async getCollections() {
-		return new Promise((resolve, reject) => {
-			this.collections.find({}, { email: 0 }).exec(function (err, data) {
-				if (err) {
-					reject(err);
-				}
-				else {
-					resolve(data);
-				}
-			});
-		});
+		return []; // ToDo
 	}
 
 	async getCatalogs() {
-		return new Promise((resolve, reject) => {
-			this.catalogs.find({}, { email: 0 }).sort({ title: 1 }).exec(function (err, data) {
-				if (err) {
-					reject(err);
-				}
-				else {
-					resolve(upgradeCatalogs(data));
-				}
-			});
-		});
+		return this.upgradeCatalogs(await this.getAll("catalogs"));
 	}
 
 	async getNewestData(recent = 3) {
-		return new Promise((resolve, reject) => {
-			this.catalogs.find({}, { email: 0 }).sort({ createdAt: -1 }).limit(recent).exec(function (err, data) {
-				if (err) {
-					reject(err);
-				}
-				else {
-					resolve(upgradeCatalogs(data));
-				}
-			});
-		});
+		return this.upgradeCatalogs(await this.getNewest("catalogs", recent));
+	}
+
+	async getAll(table) {
+		try {
+			const sql = `
+			SELECT *
+			FROM ${table}
+			ORDER BY title ASC
+			`;
+			const res = await this.db.query(sql);
+			return res.rows;
+		} catch (error) {
+			console.error(error);
+		}
+		return [];
+
+	}
+
+	async getNewest(table, recent = 3) {
+		try {
+			const sql = `
+			SELECT *
+			FROM ${table}
+			ORDER BY created DESC
+			LIMIT ${recent}
+			`;
+			const res = await this.db.query(sql);
+			return res.rows;
+		} catch (error) {
+			console.error(error);
+		}
+		return [];
 	}
 
 	async getCollection(id) {
-		return new Promise((resolve, reject) => {
-			this.collections.findOne({id}, { email: 0 }, function (err, data) {
-				if (err) {
-					reject(err);
-				}
-				else {
-					resolve(data);
-				}
-			});
-		});
+		return null; // ToDo
 	}
 
 	async getCatalog(slug) {
-		return new Promise((resolve, reject) => {
-			this.catalogs.findOne({slug}, { email: 0 }, function (err, data) {
-				if (err) {
-					reject(err);
-				}
-				else {
-					resolve(upgradeCatalog(data));
-				}
-			});
-		});
+		const catalog = await this.findOne("catalogs", "slug", slug);
+		if (catalog) {
+			return this.upgradeCatalog(catalog);
+		}
+		else {
+			return null;
+		}
+	}
+
+	async findOne(table, column, value, excludeColumns = ["email"]) {
+		try {
+			const sql = `
+			SELECT *
+			FROM ${table}
+			WHERE ${column} = $1
+			LIMIT 1
+			`;
+			const res = await this.db.query(sql, [value]);
+			if (res.rows.length > 0) {
+				return Utils.omit(res.rows[0], excludeColumns);
+			}
+		} catch(error) {
+			console.error(error);
+		}
+		return null;
+	}
+
+	async insertFromObject(data, table, timestamps = true) {
+		try {
+			if (timestamps) {
+				data.created = new Date();
+				data.updated = new Date();
+			}
+			const values = Object.values(data);
+			const columns = Object.keys(data).join(', ');
+			const placeholders = Utils.range(1, values.length+1).map(i => '$' + i).join(', ');
+			const sql = `
+				INSERT INTO ${table} (${columns})
+				VALUES (${placeholders})
+				RETURNING *
+			`;
+			const res = await this.db.query(sql, values);
+			return res.rows[0];
+		} catch(error) {
+			console.error(error);
+			return null;
+		}
 	}
 	
 	async addEcosystem(url, title, summary, categories = [], language = null, email = null, extensions = [], apiExtensions = []) {
@@ -157,19 +141,16 @@ module.exports = class Data {
 		email = this.checkEmail(email);
 		extensions = this.checkExtensions(extensions);
 		apiExtensions = this.checkApiExtensions(apiExtensions);
-		this.checkDuplicates(this.ecosystem, url);
-		
-		return new Promise((resolve, reject) => {
-			var data = {url, title, summary, categories, language, email, extensions, apiExtensions};
-			this.ecosystem.insert(data, (err, ecosystem) => {
-				if (err) {
-					reject(err);
-				}
-				else {
-					resolve(ecosystem);
-				}
-			});
-		});
+		await this.checkDuplicates("ecosystem", url);
+
+		var data = {url, title, summary, categories, language, email, extensions, api_extensions: apiExtensions};
+		const ecosystem = await this.insertFromObject(data, "ecosystem");
+		if (ecosystem) {
+			return this.upgradeEcosystem(ecosystem);
+		}
+		else {
+			throw new Error("Adding to the ecosystem database failed. Please contact us for details.");
+		}
 	}
 
 	async addCatalog(isApi, url, slug, title, summary, access = 'public', accessInfo = null, email = null) {
@@ -184,54 +165,43 @@ module.exports = class Data {
 		title = this.checkTitle(title);
 		summary = this.checkSummary(summary);
 		email = this.checkEmail(email);
-		await this.checkDuplicates(this.catalogs, url, title);
-		if (await this.getCollection(slug)) {
+		await this.checkDuplicates("catalogs", url, title);
+		if (await this.getCatalog(slug)) {
 			throw new Error("Another catalog with the given slug exists. Please choose a different slug.");
 		}
 
-		return new Promise((resolve, reject) => {
-			var data = {isApi, slug, url, title, summary, access, accessInfo, email};
-			this.catalogs.insert(data, (err, catalog) => {
-				if (err) {
-					reject(err);
-				}
-				else {
-					resolve(catalog);
-				}
-			});
-		});
+		var data = {slug, url, title, summary, access, access_info: accessInfo, email, is_api: isApi};
+		const catalog = await this.insertFromObject(data, "catalogs");
+		if (catalog) {
+			return this.upgradeCatalog(catalog);
+		}
+		else {
+			throw new Error("Adding to the catalog database failed. Please contact us for details.");
+		}
 	}
 
-	async checkDuplicates(db, url, title = null) {
-		return new Promise((resolve, reject) => {
-			db.find({}, function (err, data) {
-				if (err) {
-					return reject(err);
+	async checkDuplicates(table, url, title = null) {
+		const res = await this.db.query(`SELECT * FROM ${table}`);
+		let similar = res.rows.find(col => {
+			if (url.toLowerCase().startsWith(col.url.toLowerCase())) {
+				return true;
+			}
+			let urlDist = new Levenshtein(col.url, url);
+			if(urlDist.distance < 2) {
+				return true;
+			}
+			if (title) {
+				let titleDist = new Levenshtein(col.title, title);
+				if(titleDist.distance < 4) {
+					return true;
 				}
-				let similar = data.find(col => {
-					if (url.toLowerCase().startsWith(col.url.toLowerCase())) {
-						return true;
-					}
-					let urlDist = new Levenshtein(col.url, url);
-					if(urlDist.distance < 2) {
-						return true;
-					}
-					if (title) {
-						let titleDist = new Levenshtein(col.title, title);
-						if(titleDist.distance < 4) {
-							return true;
-						}
-					}
-					return false;
-				});
-				if (similar) {
-					reject(new Error("The given API or Catalogs has already been submitted or the title or URL is very similar to another one."));
-				}
-				else {
-					resolve();
-				}
-			});
+			}
+			return false;
 		});
+
+		if (typeof similar !== 'undefined') {
+			throw new Error("The given API or Catalogs has already been submitted or the title or URL is very similar to another one.");
+		}
 	}
 
 	async checkUrl(url, checkCatalog = false) {
@@ -366,6 +336,37 @@ module.exports = class Data {
 			throw new Error(`${label} '${invalidExtension}' is invalid`);
 		}
 		return extensions;
+	}
+
+	upgradeEcosystem(tool) {
+		// api_extensions => apiExtensions
+		tool.apiExtensions = tool.api_extensions;
+		delete tool.api_extensions;
+		// Remove email
+		delete tool.email;
+		return tool;
+	}
+	
+	upgradeEcosystems(tools) {
+		return tools.map(this.upgradeEcosystem);
+	}
+	
+	upgradeCatalog(catalog) {
+		// Keep legacy "isPrivate" flag for external APIs
+		catalog.isPrivate = Boolean(catalog.access !== "public");
+		// is_api => isApi
+		catalog.isApi = catalog.is_api;
+		delete catalog.is_api;
+		// access_info => accessInfo
+		catalog.accessInfo = catalog.access_info;
+		delete catalog.access_info;
+		// Remove email
+		delete catalog.email;
+		return catalog;
+	}
+	
+	upgradeCatalogs(catalogs) {
+		return catalogs.map(this.upgradeCatalog);
 	}
 
 }

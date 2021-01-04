@@ -8,6 +8,7 @@ const logger = require('./logger');
 const URI = require('urijs');
 
 const SUPPORTED_PROTOCOLS = ['http', 'https'];
+const CRAWL_ALL_ITEMS = false;
 
 // Add range support to node pg driver
 pgr.install(pg);
@@ -22,12 +23,13 @@ console.info("START");
  TODOs:
  - Fix all "Todos" 
  - parallelize
- - validate fields better (e.g. version with regexp)
+ - fix: validate fields better (e.g. stac_version with regexp, remove https://doi.org/ prefix from DOIs)
+ - fix: Temporal extents with start = end give {empty} in db, e.g. https://portal.opentopography.org/stac/CA17_Guns_catalog.json
  - remove html from description (html-to-text)
- - remove the superfluous `ON CONFLICT (...) UPDATE` statements 
+ - don't index collection version? Doesn't seem useful for search...
+ - fix: remove the superfluous `ON CONFLICT (...) UPDATE` statements 
    with something more meaningful: https://stackoverflow.com/a/42217872
    For example put multiple queries into a pl/pqsql script / function
- - Crawl only a subset of items per catalog?
  - Implement summary handling 
    - create tables dynamically
    - create summaries from items
@@ -132,7 +134,7 @@ async function parseUrl(q) {
 			let collection = null;
 			if (Array.isArray(links.collection) && links.collection.length > 0) {
 				let collectionUrl = links.collection[0].href;
-				let res = query(`SELECT id FROM collections WHERE url = $1`, [collectionUrl]);
+				let res = await query(`SELECT id FROM collections WHERE url = $1`, [collectionUrl]);
 				if (res.rows.length > 0) {
 					collection = res.rows[0].id;
 				}
@@ -179,6 +181,34 @@ async function addItem(source, q, collection = null) {
 }
 
 async function addCollection(source, q) {
+	let temporal = [];
+	let spatial = [];
+	if (Utils.isPlainObject(source.extent)) {
+		if (Utils.isPlainObject(source.extent.temporal) && Array.isArray(source.extent.temporal.interval)) {
+			try {
+				temporal = source.extent.temporal.interval
+					.filter(i => Array.isArray(i) && i.length === 2 && (typeof i[0] === 'string' || typeof i[1] === 'string'))
+					.map(i => pgr.Range(
+						typeof i[0] === 'string' ? new Date(i[0]) : null,
+						typeof i[1] === 'string' ? new Date(i[1]) : null,
+						'[)'
+					));
+			} catch (error) {
+				logger.log(error);
+			}
+		}
+
+		if (Utils.isPlainObject(source.extent.spatial) && Array.isArray(source.extent.spatial.bbox)) {
+			try {
+				spatial = source.extent.spatial.bbox
+					.filter(b => Array.isArray(b) && (b.length === 4 || b.length === 6) && b.filter(n => typeof n !== 'number').length === 0);
+			} catch (error) {
+				logger.log(error);
+			}
+		}
+	}
+
+
 	let data = {
 		url: q.url,
 		catalog: q.catalog,
@@ -186,9 +216,9 @@ async function addCollection(source, q) {
 		stac_id: (typeof source.id === 'string' && source.id.length <= 150) ? source.id : null,
 		title: typeof source.title === 'string' ? source.title : null,
 		description: typeof source.description === 'string' ? source.description : null,
-		license: (typeof source.license === 'string' && source.license.match(/^[\w.\-]$/i)) ? source.license.toLowerCase() : null,
-		spatial_extent: null, // TODO
-		temporal_extent: null, // TODO: pgr.Range(..., ...)
+		license: (typeof source.license === 'string' && source.license.match(/^[\w\.\-]+$/i)) ? source.license.toLowerCase() : null,
+		spatial_extent: spatial,
+		temporal_extent: temporal,
 		source,
 		doi: (typeof source['sci:doi'] === 'string' && source['sci:doi'].length <= 150) ? source['sci:doi'] : null,
 		version: (typeof source.version === 'string' && source.version.length <= 50) ? source.version : null,
@@ -200,20 +230,25 @@ async function addCollection(source, q) {
 	return id;
 }
 
+function makeStringSet(arr, maxLength) {
+	return arr
+		.map(v => v.trim().toLowerCase())
+		.filter((v, i, self) => (typeof v === 'string' && v.length > 0 && v.length < maxLength && self.indexOf(v) === i));
+}
+
 async function addKeywords(keywords, id) {
 	if (!Array.isArray(keywords)) {
 		return;
 	}
 
+	keywords = makeStringSet(keywords, 200);
 	for(let keyword of keywords) {
-		if (typeof keyword === 'string' && keyword.length > 0 && keyword.length < 200) {
-			const sql = `
-				WITH keywords AS (INSERT INTO keywords (keyword) VALUES ($1) ON CONFLICT (keyword) DO UPDATE SET keyword = $1 RETURNING id)
-				INSERT INTO collection_keywords (collection, keyword)
-				VALUES ($2, (SELECT id FROM keywords))
-			`;
-			await query(sql, [keyword.trim().toLowerCase(), id]);
-		}
+		const sql = `
+			WITH keywords AS (INSERT INTO keywords (keyword) VALUES ($1) ON CONFLICT (keyword) DO UPDATE SET keyword = $1 RETURNING id)
+			INSERT INTO collection_keywords (collection, keyword)
+			VALUES ($2, (SELECT id FROM keywords))
+		`;
+		await query(sql, [keyword, id]);
 	}
 }
 
@@ -222,15 +257,14 @@ async function addStacExtensions(extensions, id, type) {
 		return;
 	}
 
+	extensions = makeStringSet(extensions, 255);
 	for(let extension of extensions) {
-		if (typeof extension === 'string' && extension.length > 0) {
-			const sql = `
-				WITH extensions AS (INSERT INTO stac_extensions (extension) VALUES ($1) ON CONFLICT (extension) DO UPDATE SET extension = $1 RETURNING id)
-				INSERT INTO ${type}_extensions (${type}, extension)
-				VALUES ($2, (SELECT id FROM extensions))
-			`;
-			await query(sql, [extension.trim().toLowerCase(), id]);
-		}
+		const sql = `
+			WITH extensions AS (INSERT INTO stac_extensions (extension) VALUES ($1) ON CONFLICT (extension) DO UPDATE SET extension = $1 RETURNING id)
+			INSERT INTO ${type}_extensions (${type}, extension)
+			VALUES ($2, (SELECT id FROM extensions))
+		`;
+		await query(sql, [extension, id]);
 	}
 }
 
@@ -274,7 +308,7 @@ function linksByRel(links) {
 			continue; // Ignore all links that are clearly non-JSON 
 		}
 		if (typeof link.method === 'string' && link.method.toLowerCase() !== 'get') {
-			continue; // Ignore all links that are clearly non-GET method // TODO: Add POST support later?
+			continue; // Ignore all links that are clearly non-GET method
 		}
 		if (typeof link.rel === 'string') {
 			if (!Array.isArray(rels[link.rel])) {
@@ -296,10 +330,14 @@ async function addLinksToQueue(links, catalog, type, baseUrl = null) {
 	// parent/root: ignore for now, I can't detect whether it's part actually part of the catalog (id)
 	// item
 	if (Array.isArray(links.item)) {
-
-		await insertToQueue();
-		for(let link of links.item) {
-			await insertToQueue(link.href, 'item', catalog, baseUrl);
+		if (CRAWL_ALL_ITEMS) {
+			for(let link of links.item) {
+				await insertToQueue(link.href, 'item', catalog, baseUrl);
+			}
+		}
+		else {
+			let randomIndex = Math.floor(Math.random() * links.item.length);
+			await insertToQueue(links.item[randomIndex].href, 'item', catalog, baseUrl);
 		}
 	}
 	// child
@@ -321,7 +359,7 @@ async function addLinksToQueue(links, catalog, type, baseUrl = null) {
 		await insertToQueue(links.collection[0].href, 'collection', catalog, baseUrl, (type === 'item')); // Force crawl for items so that we have a collection id
 	}
 	// next
-	if (Array.isArray(links.next) && links.next.length > 0) {
+	if (Array.isArray(links.next) && links.next.length > 0 && (CRAWL_ALL_ITEMS || type !== 'item')) {
 		await insertToQueue(links.next[0].href, type, catalog, baseUrl);
 	}
 }
@@ -344,7 +382,7 @@ async function request(url) {
 		});
 		return response.data;
 	} catch(error) {
-		logger.log(error.message);
+		logger.error(error.message);
 		return null;
 	}
 }
@@ -376,7 +414,8 @@ async function insertToQueue(url, type, catalog, baseUrl = null, forceCrawl = fa
 			const sql = `
 				INSERT INTO queue (url, type, catalog)
 				VALUES ($1, $2, $3)
-				ON CONFLICT DO NOTHING
+				ON CONFLICT (url) DO UPDATE
+					SET checks = 0, accessed = NULL
 				RETURNING *
 			`;
 			let res = await query(sql, [url, type, catalog]);
@@ -417,23 +456,36 @@ async function upsertFromObject(data, table, conflict) {
 	const values = Object.values(data);
 	const withs = [];
 	const placeholders = [];
+	let placeholderCount = 1;
 	for(var i = 0; i < columns.length; i++) {
-		let placeholder = `$${i+1}`;
+		let placeholder = `$${placeholderCount}`;
 		let k = columns[i];
-		if (values[i] !== null && (k === 'license' || k === 'stac_version')) {
+		if ((k === 'license' || k === 'stac_version') && values[i] !== null) {
 			let cte = {
-				stac_version: `versions AS (INSERT INTO stac_versions (version) VALUES (${placeholder}) ON CONFLICT (version) DO UPDATE SET version = ${placeholder} RETURNING id)`,
-				license: `licenses AS (INSERT INTO licenses (license) VALUES (${placeholder}) ON CONFLICT (license) DO UPDATE SET license = ${placeholder} RETURNING id)`
+				stac_version: `temp_versions AS (INSERT INTO stac_versions (version) VALUES (${placeholder}) ON CONFLICT (version) DO UPDATE SET version = ${placeholder} RETURNING id)`,
+				license: `temp_licenses AS (INSERT INTO licenses (license) VALUES (${placeholder}) ON CONFLICT (license) DO UPDATE SET license = ${placeholder} RETURNING id)`
 			};
 			let select = {
-				stac_version: `(SELECT id FROM versions)`,
-				license: `(SELECT id FROM licenses)`
+				stac_version: `(SELECT id FROM temp_versions)`,
+				license: `(SELECT id FROM temp_licenses)`
 			};
 			withs.push(cte[k]);
 			placeholders.push(select[k]);
+			placeholderCount++;
+		}
+		else if (k === 'spatial_extent' && Array.isArray(values[i]) && values[i].length > 0) {
+			let postgis = values[i].map(b => {
+				// 3rd dimension is dropped for now
+				let x2 = b.length === 6 ? 3 : 2;
+				let y2 = b.length === 6 ? 4 : 3
+				return `ST_MakeEnvelope(${b[0]}, ${b[1]}, ${b[x2]}, ${b[y2]}, 4326)`;
+			});
+			placeholders.push(`ARRAY[ ${postgis.join(', ')} ]`);
+			values.splice(i, 1);
 		}
 		else {
 			placeholders.push(placeholder);
+			placeholderCount++;
 		}
 	}
 	const update = Object.keys(data).map((v, k) => `${v} = ${placeholders[k]}`);
@@ -454,9 +506,8 @@ async function query(sql, values) {
 	try {
 		return await db.query(sql, values);
 	} catch (error) {
-		logger.log("Error in the following query:");
-		logger.log(sql);
-		logger.log(values);
+		logger.error("Error in the following query:\n" + sql);
+		logger.error(values);
 		throw error;
 	}
 }

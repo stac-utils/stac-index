@@ -60,12 +60,24 @@ async function crawl() {
 			SELECT *
 			FROM queue
 			WHERE
-				accessed IS NULL   -- New entries (may have failed one time)
+				accessed IS NULL   -- New entries
 				OR (accessed < (NOW() - INTERVAL '1 WEEK') AND checks BETWEEN 1 AND 4)   -- On failue, try again after a week, stop after 4 weeks
 				OR (crawled < (NOW() - INTERVAL '1 YEAR') OR accessed < (NOW() - INTERVAL '1 YEAR'))   -- Recrawl every year
 			ORDER BY
 				checks ASC, -- Prio for new entries
-				RANDOM() -- Don't pressure one server too much, choose random entry
+				CASE type -- Prio: 1. collection, 2. collections, 3. catalog, 4. itemcollection/items, 5. item
+					WHEN 'collection' THEN 1
+					WHEN 'collections' THEN 2
+					WHEN 'catalog' THEN 3
+					WHEN 'itemcollection' THEN 4
+					WHEN 'items' THEN 4
+					ELSE 5
+				END,
+				CASE -- Less prio for the large catalogs, TODO: don't hardcode...
+					WHEN url LIKE '%cmr.earthdata.nasa.gov%' THEN 1
+					ELSE 0
+				END,
+				RANDOM() -- Don't pressure one server too much, choose random entries
 			LIMIT 100
 		`;
 		const res = await query(sql, []);
@@ -116,7 +128,7 @@ async function crawlFromQueue(q) {
 }
 
 async function parseUrl(q) {
-	let data = await request(q.url);
+	let data = await request(q);
 	if (!Utils.isPlainObject(data)) {
 		logger.log("Invalid response");
 		return false;
@@ -247,6 +259,7 @@ async function addKeywords(keywords, id) {
 			WITH keywords AS (INSERT INTO keywords (keyword) VALUES ($1) ON CONFLICT (keyword) DO UPDATE SET keyword = $1 RETURNING id)
 			INSERT INTO collection_keywords (collection, keyword)
 			VALUES ($2, (SELECT id FROM keywords))
+			ON CONFLICT DO NOTHING
 		`;
 		await query(sql, [keyword, id]);
 	}
@@ -263,6 +276,7 @@ async function addStacExtensions(extensions, id, type) {
 			WITH extensions AS (INSERT INTO stac_extensions (extension) VALUES ($1) ON CONFLICT (extension) DO UPDATE SET extension = $1 RETURNING id)
 			INSERT INTO ${type}_extensions (${type}, extension)
 			VALUES ($2, (SELECT id FROM extensions))
+			ON CONFLICT DO NOTHING
 		`;
 		await query(sql, [extension, id]);
 	}
@@ -348,36 +362,37 @@ async function addLinksToQueue(links, catalog, type, baseUrl = null) {
 	}
 	// items
 	if (Array.isArray(links.items) && links.items.length > 0) {
-		await insertToQueue(links.items[0].href, 'api', catalog, baseUrl);
+		await insertToQueue(links.items[0].href, 'items', catalog, baseUrl);
 	}
 	// data
 	if (Array.isArray(links.data) && links.data.length > 0) {
-		await insertToQueue(links.data[0].href, 'api', catalog, baseUrl);
+		await insertToQueue(links.data[0].href, 'collections', catalog, baseUrl);
 	}
 	// collection
 	if (Array.isArray(links.collection) && links.collection.length > 0) {
 		await insertToQueue(links.collection[0].href, 'collection', catalog, baseUrl, (type === 'item')); // Force crawl for items so that we have a collection id
 	}
 	// next
-	if (Array.isArray(links.next) && links.next.length > 0 && (CRAWL_ALL_ITEMS || type !== 'item')) {
+	if (Array.isArray(links.next) && links.next.length > 0 && (CRAWL_ALL_ITEMS || !type.includes('item'))) {
 		await insertToQueue(links.next[0].href, type, catalog, baseUrl);
 	}
 }
 
-async function request(url) {
+async function request(q) {
 	try {
+		let attempt = q.checks + 1;
 		let response = await axios({
-			url: url,
+			url: q.url,
 			method: 'get',
 			headers: {
 				'Accept-Encoding': 'gzip,deflate,compress',
 				'Accept': 'application/json,text/json',
 				'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0'
 			}, // request http headers
-			timeout: 2000, // request timeout
+			timeout: 2000 * attempt, // request timeout, give more time for further attempts
 			responseType: 'json',
 			responseEncoding: 'utf8',
-			maxRedirects: 5,
+			maxRedirects: 2 * attempt, // max number of redirects, allow more redirects for further attempts
 			decompress: true
 		});
 		return response.data;

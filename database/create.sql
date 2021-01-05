@@ -111,7 +111,6 @@ CREATE TABLE public.collections (
     temporal_extent tstzrange[] NOT NULL,
     source json NOT NULL,
     doi character varying(150),
-    version character varying(50),
     deprecated boolean DEFAULT false NOT NULL
 );
 

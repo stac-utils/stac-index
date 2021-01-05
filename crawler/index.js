@@ -34,7 +34,6 @@ console.info("START");
  - fix: validate fields better (e.g. stac_version with regexp, remove https://doi.org/ prefix from DOIs)
  - fix: Temporal extents with start = end give {empty} in db, e.g. https://portal.opentopography.org/stac/CA17_Guns_catalog.json
  - remove html from description (html-to-text)
- - don't index collection version? Doesn't seem useful for search...
  - fix: remove the superfluous `ON CONFLICT (...) UPDATE` statements 
    with something more meaningful: https://stackoverflow.com/a/42217872
    For example put multiple queries into a pl/pqsql script / function
@@ -237,7 +236,6 @@ async function addCollection(source, q) {
 		temporal_extent: temporal,
 		source,
 		doi: (typeof source['sci:doi'] === 'string' && source['sci:doi'].length <= 150) ? source['sci:doi'] : null,
-		version: (typeof source.version === 'string' && source.version.length <= 50) ? source.version : null,
 		deprecated: typeof source.deprecated === 'boolean' ? source.deprecated : false
 	};
 	let id = await upsertFromObject(data, 'collections', 'url');

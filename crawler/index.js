@@ -17,6 +17,14 @@ pgr.install(pg);
 const pool = new pg.Pool(DATABASE);
 var db;
 
+// Some files (especially AWS?) send back JSON as binary/octet-stream, handle that (TODO: check this actually helps)
+axios.interceptors.response.use(function (response) {
+	if (response.headers['content-type'] === 'binary/octet-stream') {
+		response.headers['content-type'] = 'application/json';
+	}
+    return response;
+  });
+
 console.info("START");
 
 /*
@@ -66,19 +74,15 @@ async function crawl() {
 			ORDER BY
 				checks ASC, -- Prio for new entries
 				CASE type -- Prio: 1. collection, 2. collections, 3. catalog, 4. itemcollection/items, 5. item
-					WHEN 'collection' THEN 1
-					WHEN 'collections' THEN 2
-					WHEN 'catalog' THEN 3
-					WHEN 'itemcollection' THEN 4
-					WHEN 'items' THEN 4
-					ELSE 5
-				END,
-				CASE -- Less prio for the large catalogs, TODO: don't hardcode...
-					WHEN url LIKE '%cmr.earthdata.nasa.gov%' THEN 1
-					ELSE 0
+					WHEN 'collection' THEN 10
+					WHEN 'collections' THEN 20
+					WHEN 'catalog' THEN 30
+					WHEN 'itemcollection' THEN 40
+					WHEN 'items' THEN 40
+					ELSE 50
 				END,
 				RANDOM() -- Don't pressure one server too much, choose random entries
-			LIMIT 100
+			LIMIT 10
 		`;
 		const res = await query(sql, []);
 		if (res.rows.length === 0) {
@@ -175,7 +179,7 @@ async function addLinksFromResources(q, data, key, type) {
 		else if (typeof obj.id === 'string') {
 			url = addPathElement(q.url, encodeURIComponent(obj.id));
 		}
-		await insertToQueue(url, type, q.catalog);
+		await insertToQueue(url, type, q.catalog, q.url);
 	}
 	return true;
 }
@@ -357,7 +361,9 @@ async function addLinksToQueue(links, catalog, type, baseUrl = null) {
 	// child
 	if (Array.isArray(links.child)) {
 		for(let link of links.child) {
-			await insertToQueue(link.href, 'catalog', catalog, baseUrl);
+			// Try to guess whether something is a collection from the file name
+			let typeGuess = typeof link.href === 'string' && link.href.endsWith('collection.json') ? 'collection' : 'catalog';
+			await insertToQueue(link.href, typeGuess, catalog, baseUrl);
 		}
 	}
 	// items
@@ -386,8 +392,9 @@ async function request(q) {
 			method: 'get',
 			headers: {
 				'Accept-Encoding': 'gzip,deflate,compress',
-				'Accept': 'application/json,text/json',
-				'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0'
+				'Accept': 'application/json,text/json,*/*;q=0.8',
+				'Cache-Control': 'nocache',
+				'User-Agent': 'Mozilla/5.0 (compatible; StacIndexCrawler/0.1.0; +https://stacindex.org) Gecko/20100101 Firefox/84.0'
 			}, // request http headers
 			timeout: 2000 * attempt, // request timeout, give more time for further attempts
 			responseType: 'json',
@@ -406,10 +413,11 @@ async function insertToQueue(url, type, catalog, baseUrl = null, forceCrawl = fa
 	if (typeof url === 'string' && catalog > 0) {
 		url = url.trim();
 		let protocol = URI(url).protocol();
-		if (!protocol && baseUrl) {
+		if (!protocol && typeof baseUrl === 'string') {
 			// Relative URL, add baseUrl
 			try {
-				let uri = URI(baseUrl).filename('').absoluteTo(url);
+				let baseUri = URI(baseUrl).filename('');
+				let uri = URI(url).absoluteTo(baseUri);
 				url = uri.toString();
 				protocol = uri.protocol();
 			} catch (error) {

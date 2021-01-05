@@ -153,6 +153,7 @@ class Server extends Config {
 		server.get('/collections', this.collections.bind(this));
 		server.get('/collections/:id', this.collectionById.bind(this));
 		server.get('/newest', this.newest.bind(this));
+		server.get('/statistics', this.statistics.bind(this));
 		server.get('/proxy', this.proxy.bind(this));
 		server.get('/sitemap.xml', this.sitemap.bind(this));
 	}
@@ -211,6 +212,11 @@ class Server extends Config {
 			ecosystem,
 			data
 		});
+		return next();
+	}
+
+	async statistics(req, res, next) {
+		res.send(await this.data.getStatistics());
 		return next();
 	}
 

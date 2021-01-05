@@ -92,15 +92,151 @@ module.exports = class Data {
 		}
 	}
 
-	async findOne(table, column, value, excludeColumns = ["email"]) {
+	async getStatistics() {
+		let queueCount = await this.getCount('queue');
+		return {
+			queue: {
+				count: queueCount,
+				pending: queueCount - await this.getPendingCount(),
+				errors: await this.getErrorCount(),
+			},
+			rootCatalogs: {
+				count: await this.getCount('catalogs')
+			},
+			collections: {
+				count: await this.getCount('collections'),
+				countPerRootCatalog: await this.getCountPerRootCatalog('collections'),
+				extensionCountsByRootCatalogUsage: await this.getExtensionCountsByRootCatalogUsage('collection')
+			},
+			items: {
+				comment: 'Only ONE item per CATALOG is indexed at the moment, so this actually is more a catalog count than a item count!',
+				count: await this.getCount('items'),
+				countPerRootCatalog: await this.getCountPerRootCatalog('items'),
+				extensionCountsByRootCatalogUsage: await this.getExtensionCountsByRootCatalogUsage('item')
+			},
+			keywords: {
+				count: await this.getCount('keywords')
+			},
+			stac_versions: {
+				list: await this.getAll('stac_versions', 'version')
+			},
+			stac_extensions: {
+				list: await this.getAll('stac_extensions', 'extension')
+			}
+		};
+	}
+
+	async getCountPerRootCatalog(table) {
 		try {
 			const sql = `
+			SELECT cat.id, cat.title, COUNT(DISTINCT res.id) AS num
+			FROM catalogs AS cat
+				LEFT JOIN ${table} AS res ON cat.id = res.catalog
+			GROUP BY cat.id, cat.title
+			ORDER BY num DESC
+			`;
+			const res = await this.db.query(sql);
+			if (res.rows.length > 0) {
+				return res.rows.map(v => {
+					v.num = parseInt(v.num, 10);
+					return v;
+				});
+			}
+		} catch(error) {
+			console.error(error);
+		}
+	}
+
+	async getExtensionCountsByRootCatalogUsage(type) {
+		try {
+			let sql = `
+			SELECT ext.extension, COUNT(DISTINCT cat.id) AS num
+			FROM ${type}_extensions AS map
+				LEFT JOIN ${type}s AS res ON map.${type} = res.id
+				LEFT JOIN catalogs AS cat ON cat.id = res.catalog
+				LEFT JOIN stac_extensions AS ext ON ext.id = map.extension
+			GROUP BY ext.extension
+			ORDER BY num DESC;
+			`;
+			const res = await this.db.query(sql);
+			if (res.rows.length > 0) {
+				return res.rows.map(v => {
+					v.num = parseInt(v.num, 10);
+					return v;
+				});
+			}
+		} catch(error) {
+			console.error(error);
+		}
+		return [];
+	}
+
+	async getAll(table, column = '*', orderBy = null, asc = true) {
+		try {
+			if (column !== '*' && orderBy === null) {
+				orderBy = column;
+			}
+			let sql = `SELECT ${column} FROM ${table}`;
+			if (orderBy) {
+				let order = asc ? 'ASC' : 'DESC';
+				sql += ` ORDER BY ${orderBy} ${order}`
+			}
+			const res = await this.db.query(sql);
+			if (res.rows.length > 0) {
+				if (column !== '*') {
+					return res.rows.map(arr => arr[column]);
+				}
+				else {
+					return res.rows;
+				}
+			}
+		} catch(error) {
+			console.error(error);
+		}
+		return [];
+	}
+
+	async getErrorCount() {
+		return await this.getCount('queue', 'checks > 0');
+	}
+
+	async getPendingCount() {
+		const sqlCondition = `
+			accessed IS NULL   -- New entries
+			OR (accessed < (NOW() - INTERVAL '1 WEEK') AND checks BETWEEN 1 AND 4)   -- On failue, try again after a week, stop after 4 weeks
+			OR (crawled < (NOW() - INTERVAL '1 YEAR') OR accessed < (NOW() - INTERVAL '1 YEAR'))   -- Recrawl every year
+		`;
+		return await this.getCount('queue', sqlCondition);
+	}
+
+	async getCount(table, condition = null) {
+		let where = '';
+		if (condition) {
+			where = `WHERE ${condition}`;
+		}
+		const sql = `SELECT COUNT(*) AS num FROM ${table} ${where}`;
+		let res = await this.queryOne(sql);
+		if (res !== null) {
+			return parseInt(res.num, 10);
+		}
+		else {
+			return 0;
+		}
+	}
+
+	async findOne(table, column, value, excludeColumns = ["email"]) {
+		const sql = `
 			SELECT *
 			FROM ${table}
 			WHERE ${column} = $1
 			LIMIT 1
-			`;
-			const res = await this.db.query(sql, [value]);
+		`;
+		return await this.queryOne(sql, [value], excludeColumns);
+	}
+
+	async queryOne(sql, values = [], excludeColumns = ["email"]) {
+		try {
+			const res = await this.db.query(sql, values);
 			if (res.rows.length > 0) {
 				return Utils.omit(res.rows[0], excludeColumns);
 			}

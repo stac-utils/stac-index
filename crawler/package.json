@@ -28,7 +28,7 @@
     "nodemon": "^2.0.6"
   },
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "forever": "^3.0.4",
     "lodash": "^4.17.20",
     "pg": "^8.5.1",

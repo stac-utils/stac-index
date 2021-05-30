@@ -29,7 +29,11 @@
           The URLs shown below will include the STAC Index proxy (<code>{{ proxyUrl }}</code>) and should not be used as provided in the browser.
           Use the offical link to the {{ type }} instead:<br /><a :href="data.url" target="_blank"><code>{{ data.url }}</code></a>
         </b-alert>
-        <div v-if="data.access !== 'private'" id="stac-browser"></div>
+        <b-alert v-if="isOutdated" variant="info" show>
+          This STAC catalog or API does use a legacy version of STAC. Stable versions of STAC are 1.0.0 or later.
+          Please inform the data provider about the new STAC version and kindly ask him to update the catalog to STAC 1.0 for better interoperability and tooling support.
+        </b-alert>
+        <div v-if="data.access !== 'private'" id="app"></div>
       </template>
     </b-container>
   </b-container>
@@ -60,7 +64,8 @@ export default {
     return {
       data: null,
       corsWarning: false,
-      isHttp: false
+      isHttp: false,
+      isOutdated: false
     };
   },
   computed: {
@@ -91,6 +96,7 @@ export default {
         this.data = response.data;
         if (this.data.access !== 'private') {
           let createBrowser = require('stac-browser/src/main').default;
+          console.log(createBrowser);
           let url = this.data.url;
           if (url.startsWith('http://')) {
             url = this.makeProxyUrl(url);
@@ -101,13 +107,17 @@ export default {
               timeout: 1000,
               maxContentLength: 0
             });
+            if (!this.data.isApi && isPlainObject(response.data) && (typeof response.data.stac_version !== 'string' || !response.data.stac_version.match(/^1\.\d+\.\d+$/))) {
+              this.isOutdated = true;
+            }
           } catch (error) {
             if(error.message == 'Network Error' || error.name == 'NetworkError') {
               url = this.makeProxyUrl(url);
               this.corsWarning = true;
             }
           }
-          let browser = await createBrowser(url, this.$router.path);
+          let vue = await createBrowser(url, this.$router.path);
+          console.log(vue);
         }
         else {
           document.title = this.data.title + " - STAC Index";
@@ -136,17 +146,14 @@ blockquote {
 
 <style>
 @media (min-width: 1900px) {
-  #stac-browser .container, .browse .container {
+  .browse .container, .browse .container {
       max-width: 1600px;
   }
 }
-#stac-browser {
-  font-size: 0.95em;
-}
-#stac-browser .loaded {
+.browse .loaded {
   margin: 0 -15px;
 }
-#stac-browser a.btn-outline-dark:hover {
+.browse a.btn-outline-dark:hover {
   color: #fff;
 }
 </style>

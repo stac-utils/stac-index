@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="stac-index">
     <header>
       <b-navbar toggleable="lg" type="dark" class="stac-nav" variant="info">
         <b-navbar-brand to="/" :exact="true">
@@ -31,84 +31,84 @@
 </template>
 
 <style>
-#app {
+#stac-index {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: black;
 }
 
-#app .content {
+#stac-index .content {
   padding-top: 30px;
   padding-bottom: 15px;
 }
 
-#app .bg-info {
+#stac-index .bg-info {
   background-color: #144E63 !important;
 }
 
-#app h1, #app h2, #app h3, #app h4, #app h5, #app h6 {
+#stac-index h1, #stac-index h2, #stac-index h3, #stac-index h4, #stac-index h5, #stac-index h6 {
   color: #144E63;
 }
 
-#app a, #app .list-group-item .styled-description a, #app a.list-group-item h5 {
+#stac-index a, #stac-index .list-group-item .styled-description a, #stac-index a.list-group-item h5 {
   color: #09B3AD;
 }
-#app a:hover, #app .list-group-item .styled-description a:hover, #app a:hover.list-group-item h5 {
+#stac-index a:hover, #stac-index .list-group-item .styled-description a:hover, #stac-index a:hover.list-group-item h5 {
   color: #144E63;
 }
-#app .stac-nav a {
+#stac-index .stac-nav a {
   color: white;
   font-weight: bold;
 }
-#app .stac-nav a.disabled, #app .nav a.disabled {
+#stac-index .stac-nav a.disabled, #stac-index .nav a.disabled {
   opacity: 0.5;
 }
-#app .stac-nav a:hover {
+#stac-index .stac-nav a:hover {
   color: #09B3AD;
 }
-#app .stac-nav a.router-link-active {
+#stac-index .stac-nav a.router-link-active {
   color: #09B3AD;
 }
-#app .stac-nav .nav-logo {
+#stac-index .stac-nav .nav-logo {
   height: 30px;
 }
-#app .nav-pills a.active {
+#stac-index .nav-pills a.active {
   background-color: #144E63;
   color: white;
   font-weight: normal;
 }
-#app .nav-pills a {
+#stac-index .nav-pills a {
   color: #144E63;
   font-weight: normal;
 }
 
-#app .list-group-item small, #app a.list-group-item  {
+#stac-index .list-group-item small, #stac-index a.list-group-item  {
   color: black;
 }
 
-#app .badge {
+#stac-index .badge {
   margin: 1px;
 }
-#app h6 {
+#stac-index h6 {
   margin-top: 1em;
 }
 
-#app .styled-description h1 {
+#stac-index .styled-description h1 {
   font-size: 1.2em;
 }
-#app .styled-description h2 {
+#stac-index .styled-description h2 {
   font-size: 1.1em;
 }
-#app .styled-description h3, #app .styled-description h4, #app .styled-description h5, #app .styled-description h6 {
+#stac-index .styled-description h3, #stac-index .styled-description h4, #stac-index .styled-description h5, #stac-index .styled-description h6 {
   font-size: 1em;
 }
-#app .styled-description 
-#app .styled-description p {
+#stac-index .styled-description 
+#stac-index .styled-description p {
   line-height: 1.5em;
   margin-bottom: 0.5em;
 }
-#app .styled-description p:last-of-type {
+#stac-index .styled-description p:last-of-type {
   margin-bottom: 0;
 }
 </style>

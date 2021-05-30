@@ -29,9 +29,9 @@
           The URLs shown below will include the STAC Index proxy (<code>{{ proxyUrl }}</code>) and should not be used as provided in the browser.
           Use the offical link to the {{ type }} instead:<br /><a :href="data.url" target="_blank"><code>{{ data.url }}</code></a>
         </b-alert>
-        <b-alert v-if="isOutdated" variant="info" show>
+        <b-alert v-if="isOutdated" variant="info" dismissible show>
           This STAC catalog or API does use a legacy version of STAC. Stable versions of STAC are 1.0.0 or later.
-          Please inform the data provider about the new STAC version and kindly ask him to update the catalog to STAC 1.0 for better interoperability and tooling support.
+          Please inform the data provider about the new STAC version and kindly ask them to update the catalog to STAC 1.0 for better interoperability and tooling support.
         </b-alert>
         <div v-if="data.access !== 'private'" id="app"></div>
       </template>
@@ -151,7 +151,8 @@ blockquote {
   }
 }
 .browse .loaded {
-  margin: 0 -15px;
+  padding: 0;
+  font-size: 0.95em;
 }
 .browse a.btn-outline-dark:hover {
   color: #fff;

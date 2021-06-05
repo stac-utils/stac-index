@@ -96,7 +96,6 @@ export default {
         this.data = response.data;
         if (this.data.access !== 'private') {
           let createBrowser = require('stac-browser/src/main').default;
-          console.log(createBrowser);
           let url = this.data.url;
           if (url.startsWith('http://')) {
             url = this.makeProxyUrl(url);
@@ -116,8 +115,7 @@ export default {
               this.corsWarning = true;
             }
           }
-          let vue = await createBrowser(url, this.$router.path);
-          console.log(vue);
+          await createBrowser(url, this.$router.path);
         }
         else {
           document.title = this.data.title + " - STAC Index";

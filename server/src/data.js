@@ -27,7 +27,7 @@ module.exports = class Data {
 	}
 
 	async getEcosystem() {
-		return this.upgradeEcosystems(await this.getAll("ecosystem"));
+		return this.upgradeEcosystems(await this.getAllSorted("ecosystem"));
 	}
 
 	async getNewestEcosystem(recent = 3) {
@@ -39,27 +39,15 @@ module.exports = class Data {
 	}
 
 	async getCatalogs() {
-		return this.upgradeCatalogs(await this.getAll("catalogs"));
+		return this.upgradeCatalogs(await this.getAllSorted("catalogs"));
 	}
 
 	async getNewestData(recent = 3) {
 		return this.upgradeCatalogs(await this.getNewest("catalogs", recent));
 	}
 
-	async getAll(table) {
-		try {
-			const sql = `
-			SELECT *
-			FROM ${table}
-			ORDER BY title ASC
-			`;
-			const res = await this.db.query(sql);
-			return res.rows;
-		} catch (error) {
-			console.error(error);
-		}
-		return [];
-
+	async getAllSorted(table) {
+		return await this.getAll(table, "*", "title");
 	}
 
 	async getNewest(table, recent = 3) {

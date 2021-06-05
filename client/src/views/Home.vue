@@ -71,12 +71,12 @@ export default {
   text-align: center;
   padding: 2rem;
 }
-#app .jumbotron a.btn {
+#stac-index .jumbotron a.btn {
   margin: 0 0.25em;
   background-color: #144E63;
   color: white;
 }
-#app .jumbotron a.btn:hover {
+#stac-index .jumbotron a.btn:hover {
   background-color: #09B3AD;
 }
 .logo {

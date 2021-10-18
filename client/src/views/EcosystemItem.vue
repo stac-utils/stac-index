@@ -23,15 +23,11 @@
 </template>
 
 <script>
-import { Description } from '@openeo/vue-components';
 import Utils from '../utils';
 import { EXTENSIONS, API_EXTENSIONS } from '../../../commons';
 
 export default {
   name: 'EcosystemItem',
-  components: {
-    Description
-  },
   props: {
     data: {
       type: Object

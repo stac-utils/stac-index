@@ -1,4 +1,3 @@
-const LANGUAGES = require('list-of-programming-languages');
 const { Pool } = require('pg');
 const axios = require('axios');
 const Utils = require('lodash');
@@ -13,17 +12,34 @@ module.exports = class Data {
 	constructor(db) {
 		this.db = new Pool(db);
 		this.loadLanguages();
+		this.initSpokenLanguages();
 	}
 
 	loadLanguages() {
-		this.languages = LANGUAGES.itemListElement.map(item => item.item.name);
+		const P_LANGUAGES = require('list-of-programming-languages');
+		this.languages = P_LANGUAGES.itemListElement.map(item => item.item.name);
 		this.languages.push('Web');
 		this.languages.push('Other');
+		this.languages.push('PureScript'); // See https://github.com/stac-utils/stac-index/issues/16
 		this.languages.sort();
+	}
+
+	initSpokenLanguages() {
+		const S_LANGUAGES = require('language-name-map/map');
+		this.spokenLanguages = [];
+		for(let code in S_LANGUAGES) {
+			let name = S_LANGUAGES[code].name;
+			this.spokenLanguages.push({code, name});
+		}
+		this.spokenLanguages.sort((a,b) => a.name.localeCompare(b.name));
 	}
 
 	getLanguages() {
 		return this.languages;
+	}
+
+	getSpokenLanguages() {
+		return this.spokenLanguages;
 	}
 
 	async getEcosystem() {
@@ -33,6 +49,19 @@ module.exports = class Data {
 	async getNewestEcosystem(recent = 3) {
 		return this.upgradeEcosystems(await this.getNewest("ecosystem", recent));
 	}
+
+	async getTutorials() {
+		return this.upgradeTutorials(await this.getAllSorted("tutorials"));
+	}
+
+	async getTutorialTags() {
+		return CATEGORIES.map(c => c.toLowerCase()); // ToDo: Return all existing tags from tutorials DB instead
+	}
+
+	async getNewestTutorials(recent = 3) {
+		return this.upgradeTutorials(await this.getNewest("tutorials", recent));
+	}
+
 
 	async getCollections() {
 		return []; // ToDo
@@ -265,7 +294,7 @@ module.exports = class Data {
 		email = this.checkEmail(email);
 		extensions = this.checkExtensions(extensions);
 		apiExtensions = this.checkApiExtensions(apiExtensions);
-		await this.checkDuplicates("ecosystem", url);
+		await this.checkDuplicates("ecosystem", url, title);
 
 		var data = {url, title, summary, categories, language, email, extensions, api_extensions: apiExtensions};
 		const ecosystem = await this.insertFromObject(data, "ecosystem");
@@ -274,6 +303,25 @@ module.exports = class Data {
 		}
 		else {
 			throw new Error("Adding to the ecosystem database failed. Please contact us for details.");
+		}
+	}
+	
+	async addTutorial(url, title, summary, language, tags = [], email = null) {
+		url = await this.checkUrl(url);
+		title = this.checkTitle(title, 200);
+		summary = this.checkSummary(summary);
+		tags = this.checkTags(tags);
+		language = this.checkSpokenLanguage(language);
+		email = this.checkEmail(email);
+		await this.checkDuplicates("tutorials", url, title);
+
+		var data = {url, title, summary, tags, language, email};
+		const tutorial = await this.insertFromObject(data, "tutorials");
+		if (tutorial) {
+			return this.upgradeTutorial(tutorial);
+		}
+		else {
+			throw new Error("Adding to the tutorial database failed. Please contact us for details.");
 		}
 	}
 
@@ -324,7 +372,7 @@ module.exports = class Data {
 		});
 
 		if (typeof similar !== 'undefined') {
-			throw new Error("The given API or Catalogs has already been submitted or the title or URL is very similar to another one.");
+			throw new Error("The given resource has already been submitted or the title or URL is very similar to another one.");
 		}
 	}
 
@@ -366,13 +414,13 @@ module.exports = class Data {
 		return slug;
 	}
 
-	checkTitle(title) {
+	checkTitle(title, maxLength = 50) {
 		let length = typeof title === 'string' ? title.length : 0;
 		if (title.length < 3) {
 			throw new Error(`Title must be at least 3 characters, is ${length} characters`);
 		}
-		else if (title.length > 50) {
-			throw new Error(`Title must be no longer than 50 characters, is ${length} characters`);
+		else if (title.length > maxLength) {
+			throw new Error(`Title must be no longer than ${maxLength} characters, is ${length} characters`);
 		}
 		return title;
 	}
@@ -415,18 +463,45 @@ module.exports = class Data {
 			return null;
 		}
 		if (!this.languages.includes(lang)) {
-			throw new Error('Programming Language "' + lang + '" is invalid');
+			throw new Error(`Programming Language "${lang}" is invalid`);
 		}
 		return lang;
 	}
 
+	checkSpokenLanguage(lang) {
+		if (!this.spokenLanguages.find(l => l.code === lang)) {
+			throw new Error(`Language "${lang}" is invalid`);
+		}
+		return lang;
+	}
+
+	checkTags(tags) {
+		if (!Array.isArray(tags) || tags.length === 0) {
+			throw new Error(`At least one tag is required`);
+		}
+		for(let i in tags) {
+			let tag = tags[i];
+			if (typeof tag !== 'string') {
+				throw new Error(`One of the tags is not a string`);
+			}
+			if (tag.length < 2) {
+				throw new Error(`Tag "${tag}" must be at least 2 characters, is ${tag.length} characters`);
+			}
+			if (tag.length > 50) {
+				throw new Error(`Tag "${tag}" must be no longer than 50 characters, is ${tag.length} characters`);
+			}
+			tags[i] = tag.toLowerCase();
+		}
+		return tags;
+	}
+
 	checkCategories(categories) {
-		if (!Array.isArray(categories) || categories.length == 0) {
+		if (!Array.isArray(categories) || categories.length === 0) {
 			throw new Error(`At least one category is required`);
 		}
 		let invalidCategory = categories.find(cat => !CATEGORIES.includes(cat));
 		if (invalidCategory) {
-			throw new Error(`Category '${invalidCategory}" is invalid`);
+			throw new Error(`Category "${invalidCategory}" is invalid`);
 		}
 		return categories;
 	}
@@ -473,6 +548,16 @@ module.exports = class Data {
 	
 	upgradeEcosystems(tools) {
 		return tools.map(this.upgradeEcosystem);
+	}
+
+	upgradeTutorial(doc) {
+		// Remove email
+		delete doc.email;
+		return doc;
+	}
+	
+	upgradeTutorials(docs) {
+		return docs.map(this.upgradeTutorial);
 	}
 	
 	upgradeCatalog(catalog) {

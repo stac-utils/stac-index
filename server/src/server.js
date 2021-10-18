@@ -148,6 +148,9 @@ class Server extends Config {
 		server.post('/add', this.add.bind(this));
 		server.get('/ecosystem', this.ecosystem.bind(this));
 		server.get('/languages', this.languages.bind(this));
+		server.get('/spoken_languages', this.spokenLanguages.bind(this));
+		server.get('/tags', this.tutorialTags.bind(this));
+		server.get('/tutorials', this.tutorials.bind(this));
 		server.get('/catalogs', this.catalogs.bind(this));
 		server.get('/catalogs/:slug', this.catalogById.bind(this));
 		server.get('/collections', this.collections.bind(this));
@@ -200,6 +203,15 @@ class Server extends Config {
 					res.send(400, e.message);
 					return next();
 				}
+			case 'tutorial':
+				try {
+					let tut = await this.data.addTutorial(req.body.url, req.body.title, req.body.summary, req.body.language, req.body.tags, req.body.email);
+					res.send(200, tut);
+					return next();
+				} catch (e) {
+					res.send(400, e.message);
+					return next();
+				}
 		}
 		res.send(400, "Invalid type specified.");
 		return next();
@@ -208,9 +220,11 @@ class Server extends Config {
 	async newest(req, res, next) {
 		let ecosystem = await this.data.getNewestEcosystem();
 		let data = await this.data.getNewestData();
+		let tutorials = await this.data.getNewestTutorials();
 		res.send({
 			ecosystem,
-			data
+			data,
+			tutorials
 		});
 		return next();
 	}
@@ -225,8 +239,23 @@ class Server extends Config {
 		return next();
 	}
 
+	async tutorials(req, res, next) {
+		res.send(await this.data.getTutorials());
+		return next();
+	}
+
 	async catalogs(req, res, next) {
 		res.send(await this.data.getCatalogs());
+		return next();
+	}
+
+	async spokenLanguages(req, res, next) {
+		res.send(this.data.getSpokenLanguages());
+		return next();
+	}
+
+	async tutorialTags(req, res, next) {
+		res.send(await this.data.getTutorialTags());
 		return next();
 	}
 
@@ -267,7 +296,8 @@ class Server extends Config {
 			['/add', 0, 'monthly'],
 			['/catalogs', 0.5, 'daily'],
 			['/collections', 0.5, 'daily'],
-			['/ecosystem', 0.5, 'daily']
+			['/ecosystem', 0.5, 'daily'],
+			['/tutorials', 0.5, 'daily']
 		];
 
 		let catalogs = await this.data.getCatalogs();

@@ -1,6 +1,6 @@
 <template>
   <b-container class="content add">
-    <h1>Add new Catalog or Tool</h1>
+    <h1>Add a new STAC Resource</h1>
     <b-alert v-if="typeof error === 'string'" variant="danger" show>{{ error }}</b-alert>
     <b-alert v-else-if="typeof confirmation === 'string'" :variant="urlHintType" show>{{ confirmation }}</b-alert>
     <b-form @submit="onSubmit">
@@ -12,7 +12,7 @@
         <h5>{{ formTitle }}</h5>
         <b-form-group v-if="fields.includes('url')" label="URL:" label-for="url">
           <b-form-input id="url" type="url" v-model="url" required></b-form-input>
-          <b-form-text v-if="type !== 'ecosystem'">
+          <b-form-text v-if="type !== 'ecosystem' && type !== 'tutorial'">
             HTTPS should be used instead of HTTP whenever available.
             This URL must be publicly accessible or you must select "private" below.
             It must be the URL of the root catalog / API landing page.
@@ -20,8 +20,8 @@
           <b-alert v-if="urlHint" :variant="urlHintType" show>{{ urlHint }}</b-alert>
         </b-form-group>
         <b-form-group v-if="fields.includes('title')" :label="type === 'ecosystem' ? 'Name of the software or tool:' : 'Title:'" label-for="title">
-          <b-form-input id="title" type="text" v-model="title" required minlength="3" maxlength="50"></b-form-input>
-          <b-form-text>Min. 3 chars, max. 50 chars.</b-form-text>
+          <b-form-input id="title" type="text" v-model="title" required minlength="3" :maxlength="maxTitleLength"></b-form-input>
+          <b-form-text>Min. 3 chars, max. {{ maxTitleLength }} chars.</b-form-text>
         </b-form-group>
         <b-form-group v-if="fields.includes('slug')" label="Slug" label-for="title">
           <b-form-input id="slug" type="text" v-model="slug" required minlength="3" maxlength="50" @keydown="stopSlugGen" @mousedown="stopSlugGen"></b-form-input>
@@ -29,15 +29,30 @@
         </b-form-group>
         <b-form-group v-if="fields.includes('summary')" label="Summary:" label-for="summary">
           <b-form-textarea id="summary" v-model="summary" rows="3" required minlength="50" maxlength="300"></b-form-textarea>
-          <b-form-text>Short summary about the {{ formTitle }}. Min. 50 chars, max. 300 chars. One CommonMark (Markdown) style link allowed.</b-form-text>
+          <b-form-text>
+            Short summary about the {{ formTitle }}. Min. 50 chars, max. 300 chars.
+            <template v-if="type !== 'tutorial'">
+              One CommonMark (Markdown) style link allowed.
+            </template>
+          </b-form-text>
         </b-form-group>
         <b-form-group v-if="fields.includes('categories')" label="Categories:" label-for="categories">
           <multiselect v-model="categories" :options="categoryList" :multiple="true" :taggable="true"></multiselect>
         </b-form-group>
-        <b-form-group v-if="fields.includes('language')" label="Programming Language:" label-for="language">
+        <b-form-group v-if="fields.includes('tags')" label="Tags:" label-for="tags">
+          <multiselect v-model="tags" :options="allTags" :multiple="true" :taggable="true" @tag="addTag"></multiselect>
+          <b-form-text>At least one tag to categorize the learning resource. Either select existing tags or create new ones. Each tag requires min. 2 chars and max. 50 chars. Tags will be converted to lower-case.</b-form-text>
+        </b-form-group>
+        <template v-if="fields.includes('language')">
+        <b-form-group v-if="type == 'tutorial'" label="Language:" label-for="language">
+          <multiselect v-model="language" :options="spokenLanguageList" trackBy="code" label="name"></multiselect>
+          <b-form-text>This should be the written/spoken language of the learning resource.</b-form-text>
+        </b-form-group>
+        <b-form-group v-else label="Programming Language:" label-for="language">
           <multiselect v-model="language" :options="languageList"></multiselect>
           <b-form-text>This should be the main programming language.</b-form-text>
         </b-form-group>
+        </template>
         <b-form-group v-if="fields.includes('extensions')" label="Supported STAC Extensions:" label-for="extensions">
           <multiselect v-model="extensions" :options="allExtensions" :multiple="true" :taggable="true" trackBy="id" label="label"></multiselect>
           <b-form-text>Optional.</b-form-text>
@@ -91,10 +106,13 @@ export default {
       typeList: [
           { text: 'Static Catalog', value: 'catalog' },
           { text: 'API', value: 'api' },
-          { text: 'Tool / Software', value: 'ecosystem' }
+          { text: 'Tool / Software', value: 'ecosystem' },
+          { text: 'Learning resource', value: 'tutorial' }
       ],
       languageList: [],
+      spokenLanguageList: [],
       categoryList: CATEGORIES,
+      allTags: [],
       allExtensions: this.prepareMultiselect(EXTENSIONS),
       allApiExtensions: this.prepareMultiselect(API_EXTENSIONS),
       error: null,
@@ -106,6 +124,7 @@ export default {
       summary: null,
       language: null,
       categories: [],
+      tags: [],
       extensions: [],
       apiExtensions: [],
       access: 'public',
@@ -158,6 +177,12 @@ export default {
       if (newVal) {
         this.confirmation = null;
         this.error = null;
+        if (newVal === 'tutorial') {
+          this.language = this.spokenLanguageList.find(lang => lang.code === 'en') || null;
+        }
+        else {
+          this.langauge = null;
+        }
       }
     },
     title(val) {
@@ -182,6 +207,9 @@ export default {
         return null;
       }
     },
+    maxTitleLength() {
+      return this.type === 'tutorial' ? 200 : 50;
+    },
     fields() {
       let fields = ['url', 'title', 'summary', 'email'];
       if (this.type === 'catalog' || this.type === 'api') {
@@ -194,6 +222,10 @@ export default {
         fields.push('extensions');
         fields.push('apiExtensions');
       }
+      else if (this.type === 'tutorial') {
+        fields.push('language');
+        fields.push('tags');
+      }
       return fields;
     }
   },
@@ -201,14 +233,36 @@ export default {
     try {
       let response = await this.$axios.get('/languages');
       if (!Array.isArray(response.data)) {
-        throw new Error("Response data for languages is not an array");
+        throw new Error("Response data for programming languages is not an array");
       }
       this.languageList = response.data;
     } catch (error) {
       console.error("Can't load list of programming languages.");
     }
+    try {
+      let response = await this.$axios.get('/spoken_languages');
+      if (!Array.isArray(response.data)) {
+        throw new Error("Response data for spoken languages is not an array");
+      }
+      this.spokenLanguageList = response.data;
+    } catch (error) {
+      console.error("Can't load list of spoken languages.");
+    }
+    try {
+      let response = await this.$axios.get('/tags');
+      if (!Array.isArray(response.data)) {
+        throw new Error("Response data for tags is not an array");
+      }
+      this.allTags = response.data;
+    } catch (error) {
+      console.error("Can't load list of tags.");
+    }
   },
   methods: {
+    addTag(tag) {
+      this.allTags.push(tag);
+      this.tags.push(tag);
+    },
     prepareMultiselect(obj) {
       let arr = [];
       for(let key in obj) {
@@ -226,6 +280,7 @@ export default {
       this.summary = null;
       this.language = null,
       this.categories = [];
+      this.tags = [];
       this.access = 'public';
       this.accessInfo = null;
       this.email = null;
@@ -246,14 +301,23 @@ export default {
       }
     },
     getData() {
+      let language = null;
+      if (this.type === 'tutorial') {
+        if (isPlainObject(this.language)) {
+          language = this.language.code;
+        }
+      } else {
+        language = this.language;
+      }
       return {
         type: this.type,
         url: this.url,
         slug: this.slug,
         title: this.title,
         summary: this.summary,
-        language: this.language,
+        language,
         categories: this.categories,
+        tags: this.tags,
         access: this.access,
         accessInfo: this.accessInfo,
         email: this.email,

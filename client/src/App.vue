@@ -14,7 +14,8 @@
             <b-nav-item to="/catalogs">Catalogs</b-nav-item>
             <b-nav-item to="/collections">Collection Search</b-nav-item>
             <b-nav-item to="/ecosystem">Ecosystem</b-nav-item>
-            <b-nav-item to="/add" title="Add new Catalog or Tool"><b-icon icon="plus-circle-fill" /></b-nav-item>
+            <b-nav-item to="/learn" title="STAC tutorials and more learning resources">Learn STAC</b-nav-item>
+            <b-nav-item to="/add" title="Add a new STAC resource"><b-icon icon="plus-circle-fill" /></b-nav-item>
           </b-navbar-nav>
 
           <b-navbar-nav class="ml-auto">

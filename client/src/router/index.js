@@ -44,6 +44,12 @@ const routes = [
     props: route => (route.query)
   },
   {
+    path: '/learn',
+    name: 'Learn STAC',
+    component: () => import(/* webpackChunkName: "tutorials" */ '../views/Tutorials.vue'),
+    props: route => (route.query)
+  },
+  {
     path: '/add',
     name: 'Add',
     component: () => import(/* webpackChunkName: "add" */ '../views/Add.vue')

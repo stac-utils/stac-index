@@ -12,8 +12,9 @@
       <hr class="my-4">
       <p>You don't know STAC yet? Check it out at <a href="https://stacspec.org" target="_blank">stacspec.org</a>.</p>
 
+      <b-button to="/learn">Learning Resources</b-button>
       <b-button to="/catalogs">Catalogs</b-button>
-      <b-button to="/collections">Collection Search</b-button>
+      <!-- <b-button to="/collections">Collection Search</b-button> -->
       <b-button to="/ecosystem">Ecosystem</b-button>
     </b-jumbotron>
 
@@ -31,6 +32,12 @@
             <EcosystemItem v-for="data in newest.ecosystem" :key="data._id" :data="data" />
           </b-list-group>
         </b-card>
+
+        <b-card header="Learning Resources" v-if="newest.tutorials.length > 0">
+          <b-list-group>
+            <TutorialsItem v-for="data in newest.tutorials" :key="data._id" :data="data" />
+          </b-list-group>
+        </b-card>
       </b-card-group>
     </template>
 
@@ -40,12 +47,14 @@
 <script>
 import DataItem from './DataItem.vue';
 import EcosystemItem from './EcosystemItem.vue';
+import TutorialsItem from './TutorialsItem.vue';
 
 export default {
   name: 'Home',
   components: {
     DataItem,
-    EcosystemItem
+    EcosystemItem,
+    TutorialsItem
   },
   data() {
     return {

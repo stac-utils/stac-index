@@ -1,16 +1,18 @@
 const { Pool } = require('pg');
 const axios = require('axios');
+const twitter = require('twitter-lite');
 const Utils = require('lodash');
 const Levenshtein = require('levenshtein');
-const { EXTENSIONS, API_EXTENSIONS, CATEGORIES } = require('../../commons');
+const { EXTENSIONS, API_EXTENSIONS, CATEGORIES, DEV, LINK_REGEXP } = require('../../commons');
 
 const emailRegExp = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 const validAccess = ['public', 'protected', 'private'];
 
 module.exports = class Data {
 
-	constructor(db) {
+	constructor(db, twitter = {}) {
 		this.db = new Pool(db);
+		this.twitter = twitter;
 		this.loadLanguages();
 		this.initSpokenLanguages();
 	}
@@ -299,6 +301,7 @@ module.exports = class Data {
 		var data = {url, title, summary, categories, language, email, extensions, api_extensions: apiExtensions};
 		const ecosystem = await this.insertFromObject(data, "ecosystem");
 		if (ecosystem) {
+			this.tweet("ecosystem", data);
 			return this.upgradeEcosystem(ecosystem);
 		}
 		else {
@@ -318,6 +321,7 @@ module.exports = class Data {
 		var data = {url, title, summary, tags, language, email};
 		const tutorial = await this.insertFromObject(data, "tutorials");
 		if (tutorial) {
+			this.tweet("tutorial", data);
 			return this.upgradeTutorial(tutorial);
 		}
 		else {
@@ -345,6 +349,7 @@ module.exports = class Data {
 		var data = {slug, url, title, summary, access, access_info: accessInfo, email, is_api: isApi};
 		const catalog = await this.insertFromObject(data, "catalogs");
 		if (catalog) {
+			this.tweet("catalogs", data);
 			return this.upgradeCatalog(catalog);
 		}
 		else {
@@ -573,6 +578,62 @@ module.exports = class Data {
 	
 	upgradeCatalogs(catalogs) {
 		return catalogs.map(this.upgradeCatalog);
+	}
+
+	async tweet(type, data) {
+		if (!this.twitter.application_consumer_key || !this.twitter.application_secret || !this.twitter.user_access_token || !this.twitter.user_secret) {
+			return;
+		}
+	
+		try {			
+			var label;
+			var url = data.url;
+			switch(type) {
+				case 'catalogs':
+					if (data.access === 'private') {
+						return; // Don't tweet private access data
+					}
+					label = data.is_api ? 'STAC API' : 'static STAC Catalog';
+					url = `https://stacindex.org/catalogs/${data.slug}`;
+					break;
+				case 'ecosystem':
+					label = `${data.language} STAC software/tool`;
+					break;
+				case 'tutorial':
+					label = `STAC learning resource`;
+					break;
+				default:
+					return;
+			}
+
+			let status = `New ${label} "${data.title}" available at ${url}\n\n`;
+
+			// Remove link from summary
+			let matches = data.summary.match(LINK_REGEXP);
+			let summary = matches ? matches[1] + matches[2] + matches[4] : data.summary;
+			let charsLeft = 280 - status.length - 10; // 10 chars buffer
+			if (charsLeft > 50) {
+				if (summary.length > charsLeft) {
+					status += summary.substr(0, charsLeft) + '…';
+				}
+				else {
+					status += summary;
+				}
+			}
+			status = status.trim();
+
+			if (DEV) {
+				console.log(status);
+				return;
+			}
+
+			const client = new twitter(this.twitter);
+			await client.post('statuses/update', {status});
+		} catch (error) {
+			if (DEV) {
+				console.error(error);
+			}
+		}
 	}
 
 }

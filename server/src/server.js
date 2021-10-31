@@ -27,7 +27,7 @@ class Server extends Config {
 		this.https_server = null;
 
 		this.afterServerStartListener = [];
-		this.data = new Data(this.db);
+		this.data = new Data(this.db, this.twitter);
 
 		this.startServer();
 	}

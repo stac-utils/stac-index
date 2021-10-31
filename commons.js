@@ -43,6 +43,8 @@ const CATEGORIES = [
 	'Visualization'
 ];
 
+const LINK_REGEXP = /^(.*)\[([^\]]+)\]\((https?:\/\/[^\)<>]+)\)(.*)$/;
+
 const DEV = false;
 const HTTP_HOST = DEV ? 'localhost' : 'stacindex.org';
 const HTTP_INT_PORT = DEV ? 80 : 9999;
@@ -59,6 +61,7 @@ const DATABASE = {
 };
 
 module.exports = {
+	LINK_REGEXP,
 	EXTENSIONS,
 	API_EXTENSIONS,
 	CATEGORIES,

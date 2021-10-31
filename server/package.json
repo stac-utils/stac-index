@@ -36,6 +36,7 @@
     "list-of-programming-languages": "^2.0.2",
     "lodash": "^4.17.21",
     "pg": "^8.5.1",
-    "restify": "^8.3.3"
+    "restify": "^8.3.3",
+    "twitter-lite": "^1.1.0"
   }
 }

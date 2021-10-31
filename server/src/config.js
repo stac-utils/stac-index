@@ -18,5 +18,11 @@ module.exports = class Config {
 		};
 		this.corsExposeHeaders = 'Location';
 		this.db = DATABASE;
+		this.twitter = {
+			consumer_key: '', // API Key
+			consumer_secret: '', // API Secret
+			access_token_key: '', // Access Token
+			access_token_secret: '' // Access Token Secret
+		};
 	}
 }

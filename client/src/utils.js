@@ -1,3 +1,5 @@
+import { LINK_REGEXP } from "../../commons";
+
 // Taken from Vue.js
 var regexEscape = /["&'<>`]/g;
 var escapeMap = {
@@ -24,7 +26,7 @@ export default class Utils {
     };
 
     static parseLink(text) {
-        let matches = text.match(/^(.*)\[([^\]]+)\]\((https?:\/\/[^\)<>]+)\)(.*)$/);
+        let matches = text.match(LINK_REGEXP);
         if (matches) {
             return Utils.escape(matches[1]) + '<a href="' + Utils.escape(matches[3]) + '" target="_blank">' + Utils.escape(matches[2]) + '</a>' + Utils.escape(matches[4]);
         }

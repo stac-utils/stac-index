@@ -355,9 +355,6 @@ module.exports = class Data {
 	async checkDuplicates(table, url, title = null) {
 		const res = await this.db.query(`SELECT * FROM ${table}`);
 		let similar = res.rows.find(col => {
-			if (url.toLowerCase().startsWith(col.url.toLowerCase())) {
-				return true;
-			}
 			let urlDist = new Levenshtein(col.url, url);
 			if(urlDist.distance < 2) {
 				return true;

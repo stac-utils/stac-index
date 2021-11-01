@@ -581,7 +581,7 @@ module.exports = class Data {
 	}
 
 	async tweet(type, data) {
-		if (!this.twitter.application_consumer_key || !this.twitter.application_secret || !this.twitter.user_access_token || !this.twitter.user_secret) {
+		if (!this.twitter.consumer_key || !this.twitter.consumer_secret || !this.twitter.access_token_key || !this.twitter.access_token_secret) {
 			return;
 		}
 	

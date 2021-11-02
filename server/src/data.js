@@ -361,12 +361,12 @@ module.exports = class Data {
 		const res = await this.db.query(`SELECT * FROM ${table}`);
 		let similar = res.rows.find(col => {
 			let urlDist = new Levenshtein(col.url, url);
-			if(urlDist.distance < 2) {
+			if(urlDist.distance <= 1) {
 				return true;
 			}
-			if (title) {
-				let titleDist = new Levenshtein(col.title, title);
-				if(titleDist.distance < 4) {
+			if (typeof title === 'string') {
+				let titleDist = new Levenshtein(col.title.toLowerCase(), title.toLowerCase());
+				if(titleDist.distance <= 2) {
 					return true;
 				}
 			}

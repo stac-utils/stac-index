@@ -6,7 +6,7 @@
       <!-- ToDo: Display full language name -->
     </div>
     <div class="styled-description summary">
-      <p>{{ data.summary }}</p>
+      <p v-html="parseLink(data.summary)"></p>
     </div>
     <small>
       <b-badge v-for="tag in tags" :key="tag">{{ tag }}</b-badge>
@@ -15,6 +15,7 @@
 </template>
 
 <script>
+import Utils from '../utils';
 
 export default {
   name: 'EcosystemItem',
@@ -26,6 +27,11 @@ export default {
   computed: {
     tags() {
       return this.data.tags.map(tag => tag.toUpperCase()).sort();
+    }
+  },
+  methods: {
+    parseLink(text) {
+      return Utils.parseLink(text);
     }
   }
 };

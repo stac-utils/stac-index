@@ -3,11 +3,11 @@ const API_EXTENSIONS = {
 	"features-transactions": "OGC API - Features - Transactions",
 	"features-versioning": "OGC API - Features - Versioning",
 	"item-search": "Item Search",
-	"item-search-sort": "Item Search - Sort",
+	"item-search-context": "Item Search - Context",
 	"item-search-fields": "Item Search - Fields",
-	"item-search-query": "Item Search - Query (deprecated)",
 	"item-search-filter": "Item Search - Filter",
-	"item-search-context": "Item Search - Context"
+	"item-search-query": "Item Search - Query (deprecated)",
+	"item-search-sort": "Item Search - Sort"
 };
 const EXTENSIONS = {
 	"checksum": "Checksum (deprecated)",
@@ -17,6 +17,7 @@ const EXTENSIONS = {
 	"file": "File",
 	"item-assets": "Item Asset Definition",
 	"label": "Label",
+	"mgrs": "MGRS",
 	"pointcloud": "Point Cloud",
 	"processing": "Processing",
 	"projection": "Projection",
@@ -25,6 +26,7 @@ const EXTENSIONS = {
 	"sat": "Satellite",
 	"scientific": "Scientific",
 	"single-file-stac": "Single File STAC",
+	"storage": "Cloud Storage",
 	"tiled-asstes": "Tiled Assets",
 	"timestamps": "Timestamps",
 	"version": "Versioning Indicators",

@@ -12,34 +12,37 @@
       <hr class="my-4">
       <p>You don't know STAC yet? Check it out at <a href="https://stacspec.org" target="_blank">stacspec.org</a>.</p>
 
-      <b-button to="/learn">Learning Resources</b-button>
       <b-button to="/catalogs">Catalogs</b-button>
       <!-- <b-button to="/collections">Collection Search</b-button> -->
       <b-button to="/ecosystem">Ecosystem</b-button>
+      <b-button to="/learn">Learning Resources</b-button>
     </b-jumbotron>
 
-    <template v-if="newest.data.length > 0 || newest.ecosystem.length > 0">
-      <h2>Recently added</h2>
-      <b-card-group deck>
+    <div class="recently" v-if="newest.data.length > 0 || newest.ecosystem.length > 0">
+      <h2>
+        Recently added
+        <small class="text-muted"><b-icon icon="twitter" /> Follow <a href="https://twitter.com/stacindex">@stacindex</a> to get notified about additions</small>
+      </h2>
+      <b-card-group columns>
         <b-card header="Catalogs" v-if="newest.data.length > 0">
-          <b-list-group>
+          <b-list-group flush>
             <DataItem v-for="data in newest.data" :key="data._id" :data="data" />
           </b-list-group>
         </b-card>
 
         <b-card header="Ecosystem" v-if="newest.ecosystem.length > 0">
-          <b-list-group>
+          <b-list-group flush>
             <EcosystemItem v-for="data in newest.ecosystem" :key="data._id" :data="data" />
           </b-list-group>
         </b-card>
 
         <b-card header="Learning Resources" v-if="newest.tutorials.length > 0">
-          <b-list-group>
+          <b-list-group flush>
             <TutorialsItem v-for="data in newest.tutorials" :key="data._id" :data="data" />
           </b-list-group>
         </b-card>
       </b-card-group>
-    </template>
+    </div>
 
   </b-container>
 </template>
@@ -87,6 +90,17 @@ export default {
 }
 #stac-index .jumbotron a.btn:hover {
   background-color: #09B3AD;
+}
+.recently .card-body {
+  padding: 0;
+}
+.recently .text-muted {
+  margin: 0.5em 0;
+  font-size: 1.1rem;
+  float: right;
+}
+.recently .card-columns {
+  clear: right;
 }
 .logo {
   padding-bottom: 30px;

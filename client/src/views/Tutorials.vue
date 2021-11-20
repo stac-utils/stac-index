@@ -13,7 +13,7 @@
       <h6>Filter by Language</h6>
       <b-nav pills small>
         <b-nav-item :active="!language" :to="uri({language: null})">All</b-nav-item>
-        <b-nav-item v-for="lang in languages" :key="lang" :active="language === lang.code" :to="uri({language: lang.code})">{{ lang.name }}</b-nav-item>
+        <b-nav-item v-for="lang in languages" :key="lang.code" :active="language === lang.code" :to="uri({language: lang.code})">{{ lang.name }}</b-nav-item>
       </b-nav>
       <hr />
       <b-alert v-if="filtered.length === 0" show>No learning resource found.</b-alert>
@@ -28,7 +28,7 @@
 import TutorialsItem from './TutorialsItem.vue';
 
 export default {
-  name: 'Ecosystem',
+  name: 'Tutorials',
   components: {
     TutorialsItem
   },

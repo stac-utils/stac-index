@@ -6,7 +6,7 @@
     <b-alert v-else-if="typeof tutorials === 'string'" variant="danger" show>{{ tutorials }}</b-alert>
     <template v-else>
       <h6>Filter by Tags</h6>
-      <b-nav pills small>
+      <b-nav pills small class="tags">
         <b-nav-item :active="!tag" :to="uri({tag: null})">All</b-nav-item>
         <b-nav-item v-for="t in tags" :key="t" :active="t === tag" :to="uri({tag: t})">{{ t }}</b-nav-item>
       </b-nav>
@@ -131,3 +131,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.tags .nav-item {
+  	text-transform: capitalize;
+}
+</style>

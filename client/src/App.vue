@@ -12,7 +12,7 @@
         <b-collapse id="nav-collapse" is-nav>
           <b-navbar-nav>
             <b-nav-item to="/catalogs">Catalogs</b-nav-item>
-            <b-nav-item to="/collections">Collection Search</b-nav-item>
+            <!-- <b-nav-item to="/collections">Collection Search</b-nav-item> -->
             <b-nav-item to="/ecosystem">Ecosystem</b-nav-item>
             <b-nav-item to="/learn" title="STAC tutorials and more learning resources">Learn STAC</b-nav-item>
             <b-nav-item to="/add" title="Add a new STAC resource"><b-icon icon="plus-circle-fill" /></b-nav-item>
@@ -90,6 +90,7 @@
 
 #stac-index .badge {
   margin: 1px;
+  font-size: 95%;
 }
 #stac-index h6 {
   margin-top: 1em;
@@ -104,7 +105,7 @@
 #stac-index .styled-description h3, #stac-index .styled-description h4, #stac-index .styled-description h5, #stac-index .styled-description h6 {
   font-size: 1em;
 }
-#stac-index .styled-description 
+#stac-index .styled-description,
 #stac-index .styled-description p {
   line-height: 1.5em;
   margin-bottom: 0.5em;

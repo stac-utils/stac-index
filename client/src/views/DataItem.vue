@@ -14,7 +14,7 @@
     <div class="styled-description summary">
       <p v-html="parseLink(data.summary)"></p>
     </div>
-    <small><code><b-link :href="data.url" target="_blank">{{ data.url }}</b-link></code></small>
+    <small class="url"><b-icon icon="link" /> <code><b-link :href="data.url" target="_blank">{{ data.url }}</b-link></code></small>
   </b-list-group-item>
 </template>
 
@@ -43,5 +43,13 @@ export default {
 <style scoped>
 .header-badges {
   white-space: nowrap;
+}
+small.url {
+  display: block;
+  line-height: 1.25em;
+  margin: 0.25em 0;
+}
+small.url code {
+  font-size: 100%;
 }
 </style>

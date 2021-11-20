@@ -45,7 +45,7 @@ const CATEGORIES = [
 	'Visualization'
 ];
 
-const LINK_REGEXP = /^(.*)\[([^\]]+)\]\((https?:\/\/[^\)<>]+)\)(.*)$/;
+const LINK_REGEXP = /^(.*)\[([^\]]+)\]\((https?:\/\/[^\)<>"']+)\)(.*)$/is;
 
 const DEV = false;
 const HTTP_HOST = DEV ? 'localhost' : 'stacindex.org';

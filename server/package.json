@@ -10,8 +10,8 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon src/server.js --trace-warnings",
-    "up": "forever start -a -l forever.log -o forever-out.log -e forever-err.log src/server.js",
-    "down": "forever stop src/server.js",
+    "up": "pm2 start src/server.js",
+    "down": "pm2 stop src/server.js",
     "debug": "node --nolazy --inspect src/server.js"
   },
   "author": "Matthias Mohr",
@@ -25,8 +25,8 @@
     "url": "git+https://github.com/stac-utils/stac-index.git"
   },
   "devDependencies": {
-    "forever": "^3.0.4",
-    "nodemon": "^2.0.6"
+    "nodemon": "^2.0.6",
+    "pm2": "^5.1.2"
   },
   "dependencies": {
     "axios": "^0.21.4",

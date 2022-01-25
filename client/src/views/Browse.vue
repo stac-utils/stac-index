@@ -25,7 +25,7 @@
           <template v-if="corsWarning">
             This {{ type }} doesn't support <a href="https://developer.mozilla.org/de/docs/Web/HTTP/CORS" target="_blank">CORS</a>.
           </template>
-          STAC Index tries to proxy the request, but links, images or other references might be broken while browing through the {{ type }}.
+          STAC Index tries to proxy the request, but links, images or other references might be broken while browsing through the {{ type }}.
           The URLs shown below will include the STAC Index proxy (<code>{{ proxyUrl }}</code>) and should not be used as provided in the browser.
           Use the offical link to the {{ type }} instead:<br /><a :href="data.url" target="_blank"><code>{{ data.url }}</code></a>
         </b-alert>

@@ -11,17 +11,16 @@
 
         <b-collapse id="nav-collapse" is-nav>
           <b-navbar-nav>
-            <b-nav-item to="/catalogs">Catalogs</b-nav-item>
-            <!-- <b-nav-item to="/collections">Collection Search</b-nav-item> -->
-            <b-nav-item to="/ecosystem">Ecosystem</b-nav-item>
-            <b-nav-item to="/learn" title="STAC tutorials and more learning resources">Learn STAC</b-nav-item>
-            <b-nav-item to="/add" title="Add a new STAC resource"><b-icon icon="plus-circle-fill" /></b-nav-item>
+            <b-nav-item to="/catalogs" title="STAC APIs and catalogs"><b-icon icon="folder-fill" /> Catalogs</b-nav-item>
+            <b-nav-item to="/ecosystem" title="STAC tools, libraries and other software"><b-icon icon="tools" /> Ecosystem</b-nav-item>
+            <b-nav-item to="/learn" title="STAC tutorials and more learning resources"><b-icon icon="info-circle-fill" /> Learn STAC</b-nav-item>
+            <b-nav-item to="/add" title="Add a new STAC resource" class="submit"><b-icon icon="plus-circle-fill" /> Submit</b-nav-item>
           </b-navbar-nav>
 
           <b-navbar-nav class="ml-auto">
             <b-nav-item href="https://twitter.com/stacindex" target="_blank"><b-icon icon="twitter" /></b-nav-item>
-            <b-nav-item to="/contact">Contact</b-nav-item>
-            <b-nav-item to="/privacy">Privacy Policy</b-nav-item>
+            <b-nav-item to="/contact"><b-icon icon="envelope-fill" /> Contact</b-nav-item>
+            <b-nav-item to="/privacy"><b-icon icon="exclamation-triangle-fill" /> Privacy Policy</b-nav-item>
           </b-navbar-nav>
         </b-collapse>
       </b-navbar>
@@ -83,6 +82,12 @@
 #stac-index .nav-pills a {
   color: #144E63;
   font-weight: normal;
+}
+#stac-index .stac-nav .nav-item {
+  margin-left: 0.5em;
+}
+#stac-index .stac-nav .submit {
+  margin-left: 1em;
 }
 
 #stac-index .list-group-item small, #stac-index a.list-group-item  {

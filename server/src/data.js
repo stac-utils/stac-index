@@ -366,7 +366,7 @@ module.exports = class Data {
 			}
 			if (typeof title === 'string') {
 				let titleDist = new Levenshtein(col.title.toLowerCase(), title.toLowerCase());
-				if(titleDist.distance <= 2) {
+				if(titleDist.distance <= 1) {
 					return true;
 				}
 			}

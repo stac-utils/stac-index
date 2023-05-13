@@ -178,10 +178,10 @@ class Server extends Config {
 		return next();
 	}
 
-	async add(req, res, next) {
+	async add(req, res) {
 		if (!Utils.isPlainObject(req.body)) {
 			res.send(400, "No data given");
-			return next();
+			return;
 		}
 		switch(req.body.type) {
 			case 'api':
@@ -189,35 +189,35 @@ class Server extends Config {
 				try {
 					let catalog = await this.data.addCatalog(req.body.type === 'api', req.body.url, req.body.slug, req.body.title, req.body.summary, req.body.access, req.body.accessInfo, req.body.email);
 					res.send(200, catalog);
-					return next();
+					return;
 				} catch (e) {
 					res.send(400, e.message);
-					return next();
+					return;
 				}
 			case 'ecosystem':
 				try {
 					let eco = await this.data.addEcosystem(req.body.url, req.body.title, req.body.summary, req.body.categories, req.body.language, req.body.email, req.body.extensions, req.body.apiExtensions);
 					res.send(200, eco);
-					return next();
+					return;
 				} catch (e) {
 					res.send(400, e.message);
-					return next();
+					return;
 				}
 			case 'tutorial':
 				try {
 					let tut = await this.data.addTutorial(req.body.url, req.body.title, req.body.summary, req.body.language, req.body.tags, req.body.email);
 					res.send(200, tut);
-					return next();
+					return;
 				} catch (e) {
 					res.send(400, e.message);
-					return next();
+					return;
 				}
 		}
 		res.send(400, "Invalid type specified.");
-		return next();
+		return;
 	}
 
-	async newest(req, res, next) {
+	async newest(req, res) {
 		let ecosystem = await this.data.getNewestEcosystem();
 		let data = await this.data.getNewestData();
 		let tutorials = await this.data.getNewestTutorials();
@@ -226,40 +226,40 @@ class Server extends Config {
 			data,
 			tutorials
 		});
-		return next();
+		return;
 	}
 
-	async statistics(req, res, next) {
+	async statistics(req, res) {
 		res.send(await this.data.getStatistics());
-		return next();
+		return;
 	}
 
-	async ecosystem(req, res, next) {
+	async ecosystem(req, res) {
 		res.send(await this.data.getEcosystem());
-		return next();
+		return;
 	}
 
-	async tutorials(req, res, next) {
+	async tutorials(req, res) {
 		res.send(await this.data.getTutorials());
-		return next();
+		return;
 	}
 
-	async catalogs(req, res, next) {
+	async catalogs(req, res) {
 		res.send(await this.data.getCatalogs());
-		return next();
+		return;
 	}
 
-	async spokenLanguages(req, res, next) {
+	async spokenLanguages(req, res) {
 		res.send(this.data.getSpokenLanguages());
-		return next();
+		return;
 	}
 
-	async tutorialTags(req, res, next) {
+	async tutorialTags(req, res) {
 		res.send(await this.data.getTutorialTags());
-		return next();
+		return;
 	}
 
-	async catalogById(req, res, next) {
+	async catalogById(req, res) {
 		const slug = req.params['slug'];
 		const catalog = await this.data.getCatalog(slug);
 		if (catalog) {
@@ -268,18 +268,18 @@ class Server extends Config {
 		else {
 			res.send(404, `Catalog with slug '${slug}' doesn't exist`);
 		}
-		return next();
+		return;
 	}
 
-	async collections(req, res, next) {
+	async collections(req, res) {
 		res.send(await this.data.getCollections());
-		return next();
+		return;
 	}
 
-	async collectionById(req, res, next) {
+	async collectionById(req, res) {
 		var id = req.params['id'];
 		res.send(await this.data.getCollection(id));
-		return next();
+		return;
 	}
 
 	languages(req, res, next) {
@@ -287,7 +287,7 @@ class Server extends Config {
 		return next();
 	}
 
-	async sitemap(req, res, next) {
+	async sitemap(req, res) {
 		let baseUrl = 'https://' + this.hostname;
 		let urls = [
 			['/', 1.0, 'hourly'],
@@ -310,14 +310,14 @@ class Server extends Config {
 			.join("\n");
 		res.header('content-type', 'application/xml');
 		res.sendRaw(`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">\n${xml}\n</urlset>`);
-		return next();
+		return;
 	}
 
-	async proxy(req, res, next) {
+	async proxy(req, res) {
 		let q = Object.keys(req.query);
 		if (q.length !== 1) {
 			res.send(400, "Query string invalid");
-			return next();
+			return;
 		}
 
 		let url = q[0];
@@ -342,7 +342,7 @@ class Server extends Config {
 			console.error(error);
 			res.send(400, error.message);
 		}
-		return next();
+		return;
 	}
 
 	proxyLinks(obj, baseUrl) {

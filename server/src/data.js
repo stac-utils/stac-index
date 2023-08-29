@@ -359,24 +359,37 @@ module.exports = class Data {
 
 	async checkDuplicates(table, url, title = null) {
 		const res = await this.db.query(`SELECT * FROM ${table}`);
+		
+		// Helper function to clean string
+		const cleanString = (str) => str.replace(/[\s-_]/g, '');
+	
 		let similar = res.rows.find(col => {
-			let urlDist = new Levenshtein(col.url, url);
-			if(urlDist.distance <= 1) {
+			// Clean the URL and title strings before calculating Levenshtein distance
+			let cleanedColUrl = cleanString(col.url);
+			let cleanedUrl = cleanString(url);
+			
+			let urlDist = new Levenshtein(cleanedColUrl, cleanedUrl);
+			if(urlDist.distance === 0) { // Changed the threshold to 0
 				return true;
 			}
+	
 			if (typeof title === 'string') {
-				let titleDist = new Levenshtein(col.title.toLowerCase(), title.toLowerCase());
-				if(titleDist.distance <= 1) {
+				let cleanedColTitle = cleanString(col.title.toLowerCase());
+				let cleanedTitle = cleanString(title.toLowerCase());
+				
+				let titleDist = new Levenshtein(cleanedColTitle, cleanedTitle);
+				if(titleDist.distance === 0) { // Changed the threshold to 0
 					return true;
 				}
 			}
 			return false;
 		});
-
+	
 		if (typeof similar !== 'undefined') {
 			throw new Error("The given resource has already been submitted or the title or URL is very similar to another one.");
 		}
 	}
+	
 
 	async checkUrl(url, checkCatalog = false) {
 		try {

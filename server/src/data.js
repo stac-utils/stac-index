@@ -2,7 +2,6 @@ const { Pool } = require('pg');
 const axios = require('axios');
 const twitter = require('twitter-lite');
 const Utils = require('lodash');
-const Levenshtein = require('levenshtein');
 const { EXTENSIONS, API_EXTENSIONS, CATEGORIES, DEV, LINK_REGEXP } = require('../../commons');
 
 const emailRegExp = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;

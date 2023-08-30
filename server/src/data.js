@@ -2,7 +2,6 @@ const { Pool } = require('pg');
 const axios = require('axios');
 const twitter = require('twitter-lite');
 const Utils = require('lodash');
-const Levenshtein = require('levenshtein');
 const { EXTENSIONS, API_EXTENSIONS, CATEGORIES, DEV, LINK_REGEXP } = require('../../commons');
 
 const emailRegExp = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
@@ -359,24 +358,33 @@ module.exports = class Data {
 
 	async checkDuplicates(table, url, title = null) {
 		const res = await this.db.query(`SELECT * FROM ${table}`);
+		
+		const cleanString = (str) => str.replace(/[\s-_]/g, '');
+	
 		let similar = res.rows.find(col => {
-			let urlDist = new Levenshtein(col.url, url);
-			if(urlDist.distance <= 1) {
+			let cleanedColUrl = cleanString(col.url.toLowerCase());
+			let cleanedUrl = cleanString(url.toLowerCase());
+			
+			if(cleanedColUrl === cleanedUrl) { 
 				return true;
 			}
+	
 			if (typeof title === 'string') {
-				let titleDist = new Levenshtein(col.title.toLowerCase(), title.toLowerCase());
-				if(titleDist.distance <= 1) {
+				let cleanedColTitle = cleanString(col.title.toLowerCase());
+				let cleanedTitle = cleanString(title.toLowerCase());
+				
+				if(cleanedColTitle === cleanedTitle) { 
 					return true;
 				}
 			}
 			return false;
 		});
-
+	
 		if (typeof similar !== 'undefined') {
 			throw new Error("The given resource has already been submitted or the title or URL is very similar to another one.");
 		}
 	}
+	
 
 	async checkUrl(url, checkCatalog = false) {
 		try {

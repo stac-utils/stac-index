@@ -360,16 +360,13 @@ module.exports = class Data {
 	async checkDuplicates(table, url, title = null) {
 		const res = await this.db.query(`SELECT * FROM ${table}`);
 		
-		// Helper function to clean string
 		const cleanString = (str) => str.replace(/[\s-_]/g, '');
 	
 		let similar = res.rows.find(col => {
-			// Clean the URL and title strings before calculating Levenshtein distance
-			let cleanedColUrl = cleanString(col.url);
-			let cleanedUrl = cleanString(url);
+			let cleanedColUrl = cleanString(col.url.toLowerCase());
+			let cleanedUrl = cleanString(url.toLowerCase());
 			
-			let urlDist = new Levenshtein(cleanedColUrl, cleanedUrl);
-			if(urlDist.distance === 0) { // Changed the threshold to 0
+			if(cleanedColUrl === cleanedUrl) { 
 				return true;
 			}
 	
@@ -377,8 +374,7 @@ module.exports = class Data {
 				let cleanedColTitle = cleanString(col.title.toLowerCase());
 				let cleanedTitle = cleanString(title.toLowerCase());
 				
-				let titleDist = new Levenshtein(cleanedColTitle, cleanedTitle);
-				if(titleDist.distance === 0) { // Changed the threshold to 0
+				if(cleanedColTitle === cleanedTitle) { 
 					return true;
 				}
 			}

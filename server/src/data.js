@@ -194,7 +194,7 @@ module.exports = class Data {
 			if (column !== '*' && orderBy === null) {
 				orderBy = column;
 			}
-			let sql = `SELECT ${column} FROM ${table}`;
+			let sql = `SELECT DISTINCT ${column} FROM ${table}`;
 			if (orderBy) {
 				let order = asc ? 'ASC' : 'DESC';
 				sql += ` ORDER BY ${orderBy} ${order}`
